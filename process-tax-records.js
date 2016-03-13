@@ -114,7 +114,7 @@
 					console.log('no sales found ~ FIN ~')
 				} else {
 					console.log(`processing ${sales.length} sale records`)
-					Promise.all(sales.map(processSale(sale)))
+					Promise.all(sales.map(processSale))
 					.then(() => console.log('all done ~ FIN ~'))
 				}
 			})
