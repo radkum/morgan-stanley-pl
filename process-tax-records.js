@@ -96,16 +96,14 @@
 					.map((release) => {
 						return Number(release.shares) * Number(parseDollars(release.salePrice)) * getRateForTradeDateString(release.tradeDate)
 					})
-					.reduce((previous, next) => {
-						return previous + next
-					}, 0)
+					.reduce((previous, next) => previous + next, 0)
+
 				let totalDividendEarned = dividendCredits
 					.map((dividendCredit) => {
 						return Number(parseDollars(dividendCredit.netCashProceeds)) * getRateForTradeDateString(dividendCredit.tradeDate)
 					})
-					.reduce((previous, next) => {
-						return previous + next
-					}, 0)
+					.reduce((previous, next) => previous + next, 0)
+
 				console.log(`total gross profit from releases is ${totalReleaseEarned.toFixed(2)} PLN (PIT/ZG p. 24, PIT-36 p. 85 p. 136)`)
 				console.log(`total gross profit from dividens is ${totalDividendEarned.toFixed(2)} PLN`)
 				console.log(`19% from dividens profit is ${(totalDividendEarned * 0.19).toFixed(2)} PLN (PIT-38 p. 37)`)
