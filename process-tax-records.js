@@ -92,7 +92,6 @@
 				let releases = records.filter((record) => record.transactionType === 'Release')
 				let sales = records.filter((record) => record.transactionType === 'Sale')
 				let dividendCredits = records.filter((record) => record.transactionType === 'Dividend Credit')
-				let dividendReinvestments = records.filter((record) => record.transactionType === 'Dividend Reinvested')
 				let totalReleaseEarned = releases
 					.map((release) => {
 						return Number(release.shares) * Number(parseDollars(release.salePrice)) * getRateForTradeDateString(release.tradeDate)
@@ -115,9 +114,7 @@
 					console.log('no sales found ~ FIN ~')
 				} else {
 					console.log(`processing ${sales.length} sale records`)
-					Promise.all(sales
-						.map((sale) => processSale(sale))
-					)
+					Promise.all(sales.map(processSale(sale)))
 					.then(() => console.log('all done ~ FIN ~'))
 				}
 			})
