@@ -55,71 +55,175 @@
 			.split('=')
 			.pop()
 
+	const processReleases = (releases) => {
+		let partials = releases
+			.map((release) => {
+				let shareUnits = Number(release.shares)
+				let shareValue = Number(parseDollars(release.salePrice))
+				let totalUSD = shareUnits * shareValue
+				let exchangeRate = getRateForTradeDateString(release.tradeDate)
+
+				return {
+					tradeDate: release.tradeDate,
+					shareUnits: shareUnits,
+					shareValue: shareValue,
+					totalUSD: totalUSD,
+					exchangeRate: exchangeRate,
+					totalPLN: totalUSD * exchangeRate
+				}
+			})
+
+		let totalReleaseEarned = partials
+			.reduce((previous, current) => previous + current.totalPLN, 0)
+
+		if (console.table) {
+			console.log('%crelease details:', 'color: blue')
+			console.table(partials)
+		}
+		console.log(`%creleases total is %c${totalReleaseEarned.toFixed(2)} PLN`, 'color: blue', 'color: red')
+		console.log('%cyou may want to put that into PIT/ZG p. 24 and PIT-36 p. 85 p. 136', 'color: blue')
+	}
+
+	const processDividends = (dividends) => {
+		let partials = dividends
+			.map((dividend) => {
+				let netCashProceeds = Number(parseDollars(dividend.netCashProceeds))
+				let exchangeRate = getRateForTradeDateString(dividend.tradeDate)
+				
+				return {
+					tradeDate: dividend.tradeDate,
+					netCashProceeds: netCashProceeds,
+					exchangeRate: exchangeRate,
+					totalPLN: netCashProceeds * exchangeRate
+				}
+			})
+
+		let totalDividendEarned = partials
+			.reduce((previous, current) => previous + current.totalPLN, 0)
+
+		if (console.table) {
+			console.log('%cdividend details:', 'color: brown')
+			console.table(partials)
+		}
+		console.log(`%c19% of dividends total is %c${(totalDividendEarned * 0.19).toFixed(2)} PLN`, 'color: brown', 'color: red')
+		console.log('%cyou may want to put that into PIT-38 p. 37. Alternatively PIT-36 p. 212, if you don\'t need PIT-38', 'color: brown')
+	}
+
+	const processWithholdings = (withholdings) => {
+		let partials = withholdings
+			.map((withholding) => {
+				let netCashProceeds = Number(parseDollars(withholding.netCashProceeds))
+				let exchangeRate = getRateForTradeDateString(withholding.tradeDate)
+				
+				return {
+					tradeDate: withholding.tradeDate,
+					netCashProceeds: netCashProceeds,
+					exchangeRate: exchangeRate,
+					totalPLN: netCashProceeds * exchangeRate
+				}
+			})
+
+		let totalWithholdings = partials
+			.reduce((previous, current) => previous + current.totalPLN, 0)
+
+		if (console.table) {
+			console.log('%cdividend withholding details:', 'color: darkgreen')
+			console.table(partials)
+		}
+		console.log(`%cdividend witholdings total is %c${totalWithholdings.toFixed(2)} PLN`, 'color: darkgreen', 'color: red')
+		console.log('%cyou may want to put that into PIT-38 p. 38. Alternatively PIT-36 p. 214, if you don\'t need PIT-38', 'color: darkgreen')
+	}
+
 	const processSale = (sale) => {
 		let orderDate = getURLDateString(new Date(sale.orderDate))
 		return fetch(`${JSON_BASE}/transaction/details/${COMPANY_ID}/${PLAN_ID}/K?orderDate=${orderDate}&orderNumber=${sale.orderNumber}&segmentId=${sale.segmentId}&fromOrder=closedOrder&format=json`, {
+				credentials: 'same-origin',
+				headers: new Headers({
+					'X-XSRF-TOKEN': getXsrfToken()
+				})	
+			})
+			.then((response) => response.text())
+			.then((text) => {
+				let data = JSON.parse(filterResponseGarbage(text))
+				let proceedDetails = data.proceedsDetails.dataSet.DATA.pop()
+				let orderDetail = data.orderDetail.dataSet.DATA.pop()
+				let rate = getRateForTradeDateString(orderDetail.trxTradeDate)
+				let sellValue = Number(parseDollars(proceedDetails.grossProceeds)) * rate
+				let transactionCost = Number(parseDollars(proceedDetails.totalFees)) * rate
+				let buyCosts = data.shareLots.dataSet.DATA.reduce((previous, current) => {
+					return previous + Number(current.sharesSold) * Number(parseDollars(current.acquiredPrice)) * getRateForTradeDateString(current.acquiredDate)
+				}, 0)
+
+				return {
+					tradeDate: orderDetail.trxTradeDate,
+					sellValue: sellValue,
+					exchangeRate: rate,
+					transactionCost: transactionCost,
+					buyCosts: buyCosts,
+					totalCost: buyCosts + transactionCost,
+					profit: sellValue - buyCosts - transactionCost,
+					buyTransactions: data.shareLots.dataSet.DATA
+				}
+			})
+	}
+
+	fetch(`${JSON_BASE}/transactions/${COMPANY_ID}/K/${PLAN_ID}/duration/between/${PERIOD_START}/${PERIOD_END}?format=json`, {
 			credentials: 'same-origin',
 			headers: new Headers({
 				'X-XSRF-TOKEN': getXsrfToken()
-			})	
+			})
 		})
 		.then((response) => response.text())
 		.then((text) => {
 			let data = JSON.parse(filterResponseGarbage(text))
-			let proceedDetails = data.proceedsDetails.dataSet.DATA.pop()
-			let orderDetail = data.orderDetail.dataSet.DATA.pop()
-			let rate = getRateForTradeDateString(orderDetail.trxTradeDate)
-			let sellValue = Number(parseDollars(proceedDetails.grossProceeds)) * rate
-			let transactionCost = Number(parseDollars(proceedDetails.totalFees)) * rate
-			let buyCosts = data.shareLots.dataSet.DATA.reduce((previous, current) => {
-				return previous + Number(current.sharesSold) * Number(parseDollars(current.acquiredPrice)) * getRateForTradeDateString(current.acquiredDate)
-			}, 0)
-			console.log(`sell value is ${sellValue.toFixed(2)} PLN (PIT-38 p. 22)`)
-			console.log(`sell costs from shares is ${buyCosts.toFixed(2)} PLN`)
-			console.log(`sell transaction cost is ${transactionCost.toFixed(2)} PLN`)
-			console.log(`sell total cost is ${(buyCosts + transactionCost).toFixed(2)} PLN (PIT-38 p. 23)`)
-			console.log(`sell profit is ${(sellValue - buyCosts - transactionCost).toFixed(2)} PLN (PIT/ZG p. 31)`)
-		})
-	}
+			let records = data.closedOrders.dataSet.DATA
+			let sales = records.filter((record) => record.transactionType === 'Sale')
 
-	fetch(`${JSON_BASE}/transactions/${COMPANY_ID}/K/${PLAN_ID}/duration/between/${PERIOD_START}/${PERIOD_END}?format=json`, {
-		credentials: 'same-origin',
-		headers: new Headers({
-			'X-XSRF-TOKEN': getXsrfToken()
-		})
-	})
-	.then((response) =>
-		response.text()
-			.then((text) => {
-				let data = JSON.parse(filterResponseGarbage(text))
-				let records = data.closedOrders.dataSet.DATA
-				let releases = records.filter((record) => record.transactionType === 'Release')
-				let sales = records.filter((record) => record.transactionType === 'Sale')
-				let dividendCredits = records.filter((record) => record.transactionType === 'Dividend Credit')
-				let totalReleaseEarned = releases
-					.map((release) => {
-						return Number(release.shares) * Number(parseDollars(release.salePrice)) * getRateForTradeDateString(release.tradeDate)
+			processReleases(records.filter((record) => record.transactionType === 'Release'))
+			processDividends(records.filter((record) => record.transactionType === 'Dividend Credit'))
+			processWithholdings(records.filter((record) => record.transactionType === 'IRS Withholding'))
+			
+			if (!sales.length) {
+				console.log('%cno sales found ~ FIN ~', 'color: green')
+			} else {
+				console.log(`%cprocessing ${sales.length} sale records...`, 'color: green')
+				Promise.all(sales.map(processSale))
+					.then((sales) => {
+						if (console.table) {
+							console.log('%csale details:', 'color: darkorange')
+							console.table(sales, ['tradeDate','sellValue','exchangeRate','transactionCost','buyCosts','totalCost','profit'])
+							console.log('%csale details breakdowns:', 'color: darkorange')
+							sales.forEach((sale, index) => {
+								console.log(`%csale ${index + 1} related buy transactions`, 'color: darkorange')
+								console.table(sale.buyTransactions.map((transaction) => {
+									let acquiredPrice = Number(parseDollars(transaction.acquiredPrice))
+									let sharesSold = Number(transaction.sharesSold)
+									let exchangeRate = getRateForTradeDateString(transaction.acquiredDate)
+
+									return {
+										tradeDate: transaction.acquiredDate,
+										sharesSold: sharesSold,
+										acquiredPrice: acquiredPrice,
+										exchangeRate: exchangeRate,
+										acquiredPLN: sharesSold * acquiredPrice * exchangeRate
+									}
+								}))
+							})
+						}
+						let totalSellValue = sales.reduce((previous, current) => previous + current.sellValue, 0)
+						let totalCost = sales.reduce((previous, current) => previous + current.totalCost, 0)
+						let totalProfit = sales.reduce((previous, current) => previous + current.profit, 0)
+
+						console.log('%csells grand totals:', 'color: darkorange')
+						console.log(`%csells total value is %c${totalSellValue.toFixed(2)} PLN`, 'color: darkorange', 'color: red')
+						console.log('%cyou may want to put that into PIT-38 p. 22', 'color: darkorange')
+						console.log(`%csells total cost is %c${totalCost.toFixed(2)} PLN`, 'color: darkorange', 'color: red')
+						console.log('%cyou may want to put that into PIT-38 p. 23', 'color: darkorange')
+						console.log(`%csells total profit is %c${totalProfit.toFixed(2)} PLN`, 'color: darkorange', 'color: red')
+						console.log('%cyou may want to put that into PIT/ZG p. 31', 'color: darkorange')
+						console.log('%call done ~ FIN ~', 'color: green')
 					})
-					.reduce((previous, next) => previous + next, 0)
-
-				let totalDividendEarned = dividendCredits
-					.map((dividendCredit) => {
-						return Number(parseDollars(dividendCredit.netCashProceeds)) * getRateForTradeDateString(dividendCredit.tradeDate)
-					})
-					.reduce((previous, next) => previous + next, 0)
-
-				console.log(`total gross profit from releases is ${totalReleaseEarned.toFixed(2)} PLN (PIT/ZG p. 24, PIT-36 p. 85 p. 136)`)
-				console.log(`total gross profit from dividens is ${totalDividendEarned.toFixed(2)} PLN`)
-				console.log(`19% from dividens profit is ${(totalDividendEarned * 0.19).toFixed(2)} PLN (PIT-38 p. 37)`)
-				console.log(`15% from dividens profit is ${(totalDividendEarned * 0.15).toFixed(2)} PLN (PIT-38 p. 38)`)
-				if (!sales.length) {
-					console.log('no sales found ~ FIN ~')
-				} else {
-					console.log(`processing ${sales.length} sale records`)
-					Promise.all(sales.map(processSale))
-					.then(() => console.log('all done ~ FIN ~'))
-				}
-			})
-	)
-	.catch((error) => console.log('ups!, ' + error))
+			}
+		})
+		.catch((error) => console.log('ups!, ' + error))
 })()
