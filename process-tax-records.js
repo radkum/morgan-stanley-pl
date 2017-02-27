@@ -84,29 +84,47 @@
 		console.log('%cyou may want to put that into PIT/ZG p. 24 and PIT-36 p. 85 p. 136', 'color: blue')
 	}
 
-	const processDividends = (dividends) => {
-		let partials = dividends
-			.map(dividend => {
-				let netCashProceeds = Number(parseDollars(dividend.netCashProceeds))
-				let exchangeRate = getRateForTradeDateString(dividend.tradeDate)
-
-				return {
-					tradeDate: dividend.tradeDate,
-					netCashProceeds: netCashProceeds,
-					exchangeRate: exchangeRate,
-					totalPLN: netCashProceeds * exchangeRate
-				}
+	const getDividendDetails = dividend => {
+		const orderDate = getURLDateString(new Date(dividend.orderDate))
+		return fetch(`${JSON_BASE}/transaction/details/${COMPANY_ID}/${PLAN_ID}/K?orderDate=${orderDate}&orderNumber=${dividend.orderNumberForUIRef}&segmentId=${dividend.segmentId}&fromOrder=closedOrder&format=json`, {
+			credentials: 'include',
+			headers: new Headers({
+				'X-XSRF-TOKEN': getXsrfToken()
 			})
+		})
+		.then(response => response.text())
+		.then(text => {
+			const data = JSON.parse(filterResponseGarbage(text))
+			return data.orderDetail.dataSet.DATA.pop()
+		})
+	}
 
-		let totalDividendEarned = partials
-			.reduce((previous, current) => previous + current.totalPLN, 0)
+	const processDividends = dividends => {
+		Promise.all(dividends
+			.map(dividend => {
+				const exchangeRate = getRateForTradeDateString(dividend.tradeDate)
+				return getDividendDetails(dividend)
+					.then(dividendDetails => {
+						const grossDividendCredit = Number(parseDollars(dividendDetails.grossDividendCredi))
+						return {
+							tradeDate: dividend.tradeDate,
+							grossDividendCredit,
+							exchangeRate,
+							totalPLN: grossDividendCredit * exchangeRate
+						}
+					})
+			}))
+			.then(partials => {
+				const totalDividendEarned = partials
+					.reduce((previous, current) => previous + current.totalPLN, 0)
 
-		if (console.table) {
-			console.log('%cdividend details:', 'color: brown')
-			console.table(partials)
-		}
-		console.log(`%c19% of dividends total is %c${(totalDividendEarned * 0.19).toFixed(2)} PLN`, 'color: brown', 'color: red')
-		console.log('%cyou may want to put that into PIT-38 p. 37. Alternatively PIT-36 p. 218, if you don\'t need PIT-38', 'color: brown')
+				if (console.table) {
+					console.log('%cdividend details:', 'color: brown')
+					console.table(partials)
+				}
+				console.log(`%c19% of dividends total is %c${(totalDividendEarned * 0.19).toFixed(2)} PLN`, 'color: brown', 'color: red')
+				console.log('%cyou may want to put that into PIT-38 p. 37. Alternatively PIT-36 p. 218, if you don\'t need PIT-38', 'color: brown')
+			})
 	}
 
 	const processWithholdings = (withholdings) => {
