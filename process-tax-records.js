@@ -106,7 +106,7 @@
 			console.table(partials)
 		}
 		console.log(`%c19% of dividends total is %c${(totalDividendEarned * 0.19).toFixed(2)} PLN`, 'color: brown', 'color: red')
-		console.log('%cyou may want to put that into PIT-38 p. 37. Alternatively PIT-36 p. 212, if you don\'t need PIT-38', 'color: brown')
+		console.log('%cyou may want to put that into PIT-38 p. 37. Alternatively PIT-36 p. 218, if you don\'t need PIT-38', 'color: brown')
 	}
 
 	const processWithholdings = (withholdings) => {
@@ -131,7 +131,7 @@
 			console.table(partials)
 		}
 		console.log(`%cdividend witholdings total is %c${totalWithholdings.toFixed(2)} PLN`, 'color: darkgreen', 'color: red')
-		console.log('%cyou may want to put that into PIT-38 p. 38. Alternatively PIT-36 p. 214, if you don\'t need PIT-38', 'color: darkgreen')
+		console.log('%cyou may want to put that into PIT-38 p. 38. Alternatively PIT-36 p. 220, if you don\'t need PIT-38', 'color: darkgreen')
 	}
 
 	const processSale = (sale) => {
