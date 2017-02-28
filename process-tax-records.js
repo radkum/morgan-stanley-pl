@@ -16,33 +16,49 @@
 
 	const JSON_BASE = '/app-bin/spc/ba/sps'
 
-	const CURRENCY_VALUES = JSON.parse('{\"01/02/2014\":3.0315,\"01/03/2014\":3.0517,\"01/07/2014\":3.0688,\"01/08/2014\":3.0717,\"01/09/2014\":3.0695,\"01/10/2014\":3.07,\"01/13/2014\":3.045,\"01/14/2014\":3.04,\"01/15/2014\":3.0495,\"01/16/2014\":3.0566,\"01/17/2014\":3.0596,\"01/20/2014\":3.068,\"01/21/2014\":3.0763,\"01/22/2014\":3.0761,\"01/23/2014\":3.0559,\"01/24/2014\":3.0727,\"01/27/2014\":3.0884,\"01/28/2014\":3.0635,\"01/29/2014\":3.0829,\"01/30/2014\":3.1166,\"01/31/2014\":3.1288,\"02/03/2014\":3.137,\"02/04/2014\":3.1189,\"02/05/2014\":3.0987,\"02/06/2014\":3.095,\"02/07/2014\":3.0857,\"02/10/2014\":3.0683,\"02/11/2014\":3.0581,\"02/12/2014\":3.0552,\"02/13/2014\":3.0532,\"02/14/2014\":3.0334,\"02/17/2014\":3.025,\"02/18/2014\":3.03,\"02/19/2014\":3.0286,\"02/20/2014\":3.049,\"02/21/2014\":3.0389,\"02/24/2014\":3.0255,\"02/25/2014\":3.0264,\"02/26/2014\":3.026,\"02/27/2014\":3.0655,\"02/28/2014\":3.0254,\"03/03/2014\":3.0462,\"03/04/2014\":3.0489,\"03/05/2014\":3.0477,\"03/06/2014\":3.0427,\"03/07/2014\":3.0185,\"03/10/2014\":3.0266,\"03/11/2014\":3.0449,\"03/12/2014\":3.0508,\"03/13/2014\":3.0284,\"03/14/2014\":3.0481,\"03/17/2014\":3.043,\"03/18/2014\":3.0396,\"03/19/2014\":3.0245,\"03/20/2014\":3.05,\"03/21/2014\":3.0425,\"03/24/2014\":3.0483,\"03/25/2014\":3.0342,\"03/26/2014\":3.0318,\"03/27/2014\":3.0401,\"03/28/2014\":3.0374,\"03/31/2014\":3.0344,\"04/01/2014\":3.0278,\"04/02/2014\":3.0288,\"04/03/2014\":3.033,\"04/04/2014\":3.0397,\"04/07/2014\":3.0446,\"04/08/2014\":3.0276,\"04/09/2014\":3.0221,\"04/10/2014\":3.0092,\"04/11/2014\":3.0086,\"04/14/2014\":3.0288,\"04/15/2014\":3.0325,\"04/16/2014\":3.0272,\"04/17/2014\":3.0317,\"04/18/2014\":3.0265,\"04/22/2014\":3.034,\"04/23/2014\":3.0273,\"04/24/2014\":3.0285,\"04/25/2014\":3.0378,\"04/28/2014\":3.0368,\"04/29/2014\":3.0318,\"04/30/2014\":3.044,\"05/02/2014\":3.0289,\"05/05/2014\":3.031,\"05/06/2014\":3.0196,\"05/07/2014\":3.0187,\"05/08/2014\":3.0042,\"05/09/2014\":3.0247,\"05/12/2014\":3.0362,\"05/13/2014\":3.0381,\"05/14/2014\":3.048,\"05/15/2014\":3.0589,\"05/16/2014\":3.0567,\"05/19/2014\":3.0558,\"05/20/2014\":3.062,\"05/21/2014\":3.054,\"05/22/2014\":3.0525,\"05/23/2014\":3.049,\"05/26/2014\":3.0466,\"05/27/2014\":3.0532,\"05/28/2014\":3.0598,\"05/29/2014\":3.0395,\"05/30/2014\":3.0435,\"06/02/2014\":3.0413,\"06/03/2014\":3.0449,\"06/04/2014\":3.0491,\"06/05/2014\":3.0275,\"06/06/2014\":3.0222,\"06/09/2014\":3.0067,\"06/10/2014\":3.0303,\"06/11/2014\":3.0431,\"06/12/2014\":3.0374,\"06/13/2014\":3.0382,\"06/16/2014\":3.0654,\"06/17/2014\":3.0495,\"06/18/2014\":3.0589,\"06/20/2014\":3.0495,\"06/23/2014\":3.0627,\"06/24/2014\":3.0526,\"06/25/2014\":3.0451,\"06/26/2014\":3.0361,\"06/27/2014\":3.0485,\"06/30/2014\":3.0473,\"07/01/2014\":3.0355,\"07/02/2014\":3.0387,\"07/03/2014\":3.0418,\"07/04/2014\":3.0495,\"07/07/2014\":3.0497,\"07/08/2014\":3.0441,\"07/09/2014\":3.0322,\"07/10/2014\":3.0323,\"07/11/2014\":3.0426,\"07/14/2014\":3.0368,\"07/15/2014\":3.0454,\"07/16/2014\":3.0503,\"07/17/2014\":3.0579,\"07/18/2014\":3.0652,\"07/21/2014\":3.07,\"07/22/2014\":3.0748,\"07/23/2014\":3.0707,\"07/24/2014\":3.0702,\"07/25/2014\":3.0831,\"07/28/2014\":3.086,\"07/29/2014\":3.09,\"07/30/2014\":3.0978,\"07/31/2014\":3.1094,\"08/01/2014\":3.128,\"08/04/2014\":3.1114,\"08/05/2014\":3.1121,\"08/06/2014\":3.1377,\"08/07/2014\":3.1397,\"08/08/2014\":3.1509,\"08/11/2014\":3.1378,\"08/12/2014\":3.1465,\"08/13/2014\":3.1442,\"08/14/2014\":3.1285,\"08/18/2014\":3.1342,\"08/19/2014\":3.1356,\"08/20/2014\":3.147,\"08/21/2014\":3.1569,\"08/22/2014\":3.152,\"08/25/2014\":3.168,\"08/26/2014\":3.1686,\"08/27/2014\":3.1764,\"08/28/2014\":3.1834,\"08/29/2014\":3.1965,\"09/01/2014\":3.2035,\"09/02/2014\":3.2112,\"09/03/2014\":3.1912,\"09/04/2014\":3.1947,\"09/05/2014\":3.2354,\"09/08/2014\":3.2303,\"09/09/2014\":3.2605,\"09/10/2014\":3.2508,\"09/11/2014\":3.2435,\"09/12/2014\":3.2468,\"09/15/2014\":3.2522,\"09/16/2014\":3.2419,\"09/17/2014\":3.2331,\"09/18/2014\":3.249,\"09/19/2014\":3.2507,\"09/22/2014\":3.257,\"09/23/2014\":3.243,\"09/24/2014\":3.2525,\"09/25/2014\":3.2823,\"09/26/2014\":3.2776,\"09/29/2014\":3.3,\"09/30/2014\":3.2973,\"10/01/2014\":3.3172,\"10/02/2014\":3.3039,\"10/03/2014\":3.3079,\"10/06/2014\":3.3343,\"10/07/2014\":3.3106,\"10/08/2014\":3.305,\"10/09/2014\":3.2776,\"10/10/2014\":3.2985,\"10/13/2014\":3.3062,\"10/14/2014\":3.3095,\"10/15/2014\":3.3262,\"10/16/2014\":3.2985,\"10/17/2014\":3.2964,\"10/20/2014\":3.3109,\"10/21/2014\":3.2987,\"10/22/2014\":3.3275,\"10/23/2014\":3.339,\"10/24/2014\":3.3387,\"10/27/2014\":3.3288,\"10/28/2014\":3.3295,\"10/29/2014\":3.3192,\"10/30/2014\":3.3592,\"10/31/2014\":3.3459,\"11/03/2014\":3.3772,\"11/04/2014\":3.3776,\"11/05/2014\":3.3887,\"11/06/2014\":3.3769,\"11/07/2014\":3.4084,\"11/10/2014\":3.3765,\"11/12/2014\":3.3966,\"11/13/2014\":3.386,\"11/14/2014\":3.3933,\"11/17/2014\":3.3819,\"11/18/2014\":3.3706,\"11/19/2014\":3.3655,\"11/20/2014\":3.368,\"11/21/2014\":3.3827,\"11/24/2014\":3.3842,\"11/25/2014\":3.3706,\"11/26/2014\":3.3546,\"11/27/2014\":3.3528,\"11/28/2014\":3.3605,\"12/01/2014\":3.3519,\"12/02/2014\":3.3466,\"12/03/2014\":3.373,\"12/04/2014\":3.3728,\"12/05/2014\":3.3619,\"12/08/2014\":3.3978,\"12/09/2014\":3.3688,\"12/10/2014\":3.3572,\"12/11/2014\":3.3611,\"12/12/2014\":3.3639,\"12/15/2014\":3.3621,\"12/16/2014\":3.3522,\"12/17/2014\":3.3928,\"12/18/2014\":3.4428,\"12/19/2014\":3.4791,\"12/22/2014\":3.4767,\"12/23/2014\":3.4937,\"12/24/2014\":3.529,\"12/29/2014\":3.527,\"12/30/2014\":3.5458,\"12/31/2014\":3.5072,\"01/02/2015\":3.5725,\"01/05/2015\":3.5975,\"01/07/2015\":3.6375,\"01/08/2015\":3.6482,\"01/09/2015\":3.6252,\"01/12/2015\":3.6218,\"01/13/2015\":3.6252,\"01/14/2015\":3.6525,\"01/15/2015\":3.6588,\"01/16/2015\":3.7174,\"01/19/2015\":3.7176,\"01/20/2015\":3.7346,\"01/21/2015\":3.7358,\"01/22/2015\":3.6994,\"01/23/2015\":3.7687,\"01/26/2015\":3.7601,\"01/27/2015\":3.7348,\"01/28/2015\":3.7276,\"01/29/2015\":3.7418,\"01/30/2015\":3.7204,\"02/02/2015\":3.6801,\"02/03/2015\":3.6886,\"02/04/2015\":3.644,\"02/05/2015\":3.6656,\"02/06/2015\":3.6395,\"02/09/2015\":3.6811,\"02/10/2015\":3.722,\"02/11/2015\":3.7094,\"02/12/2015\":3.6926,\"02/13/2015\":3.6552,\"02/16/2015\":3.6665,\"02/17/2015\":3.6788,\"02/18/2015\":3.6784,\"02/19/2015\":3.6631,\"02/20/2015\":3.6895,\"02/23/2015\":3.6933,\"02/24/2015\":3.6948,\"02/25/2015\":3.6649,\"02/26/2015\":3.6519,\"02/27/2015\":3.698,\"03/02/2015\":3.7053,\"03/03/2015\":3.719,\"03/04/2015\":3.7485,\"03/05/2015\":3.7525,\"03/06/2015\":3.7649,\"03/09/2015\":3.789,\"03/10/2015\":3.8345,\"03/11/2015\":3.9091,\"03/12/2015\":3.8928,\"03/13/2015\":3.9141,\"03/16/2015\":3.926,\"03/17/2015\":3.9034,\"03/18/2015\":3.9073,\"03/19/2015\":3.8596,\"03/20/2015\":3.8645,\"03/23/2015\":3.818,\"03/24/2015\":3.7453,\"03/25/2015\":3.7355,\"03/26/2015\":3.705,\"03/27/2015\":3.789,\"03/30/2015\":3.7685,\"03/31/2015\":3.8125,\"04/01/2015\":3.789,\"04/02/2015\":3.7524,\"04/03/2015\":3.7449,\"04/07/2015\":3.7435,\"04/08/2015\":3.7135,\"04/09/2015\":3.7414,\"04/10/2015\":3.7894,\"04/13/2015\":3.8088,\"04/14/2015\":3.8001,\"04/15/2015\":3.7875,\"04/16/2015\":3.7746,\"04/17/2015\":3.7277,\"04/20/2015\":3.7302,\"04/21/2015\":3.7275,\"04/22/2015\":3.7125,\"04/23/2015\":3.7371,\"04/24/2015\":3.6895,\"04/27/2015\":3.7115,\"04/28/2015\":3.6751,\"04/29/2015\":3.6396,\"04/30/2015\":3.5987,\"05/04/2015\":3.632,\"05/05/2015\":3.6205,\"05/06/2015\":3.6116,\"05/07/2015\":3.583,\"05/08/2015\":3.6095,\"05/11/2015\":3.6489,\"05/12/2015\":3.6447,\"05/13/2015\":3.63,\"05/14/2015\":3.5921,\"05/15/2015\":3.5719,\"05/18/2015\":3.555,\"05/19/2015\":3.6152,\"05/20/2015\":3.6538,\"05/21/2015\":3.6605,\"05/22/2015\":3.669,\"05/25/2015\":3.75,\"05/26/2015\":3.7898,\"05/27/2015\":3.7906,\"05/28/2015\":3.7858,\"05/29/2015\":3.7671,\"06/01/2015\":3.785,\"06/02/2015\":3.7676,\"06/03/2015\":3.7108,\"06/05/2015\":3.6949,\"06/08/2015\":3.7381,\"06/09/2015\":3.6975,\"06/10/2015\":3.676,\"06/11/2015\":3.6817,\"06/12/2015\":3.7094,\"06/15/2015\":3.6905,\"06/16/2015\":3.6933,\"06/17/2015\":3.6873,\"06/18/2015\":3.6556,\"06/19/2015\":3.6879,\"06/22/2015\":3.6799,\"06/23/2015\":3.704,\"06/24/2015\":3.7103,\"06/25/2015\":3.7305,\"06/26/2015\":3.7275,\"06/29/2015\":3.7671,\"06/30/2015\":3.7645,\"07/01/2015\":3.7625,\"07/02/2015\":3.7859,\"07/03/2015\":3.7726,\"07/06/2015\":3.796,\"07/07/2015\":3.8313,\"07/08/2015\":3.8225,\"07/09/2015\":3.829,\"07/10/2015\":3.7709,\"07/13/2015\":3.7543,\"07/14/2015\":3.7645,\"07/15/2015\":3.747,\"07/16/2015\":3.7694,\"07/17/2015\":3.7676,\"07/20/2015\":3.7868,\"07/21/2015\":3.7875,\"07/22/2015\":3.7629,\"07/23/2015\":3.7559,\"07/24/2015\":3.7654,\"07/27/2015\":3.7455,\"07/28/2015\":3.7303,\"07/29/2015\":3.7471,\"07/30/2015\":3.7754,\"07/31/2015\":3.7929,\"08/03/2015\":3.7705,\"08/04/2015\":3.7792,\"08/05/2015\":3.8359,\"08/06/2015\":3.8385,\"08/07/2015\":3.8326,\"08/10/2015\":3.8246,\"08/11/2015\":3.8087,\"08/12/2015\":3.7805,\"08/13/2015\":3.7625,\"08/14/2015\":3.7557,\"08/17/2015\":3.7613,\"08/18/2015\":3.7578,\"08/19/2015\":3.7718,\"08/20/2015\":3.7659,\"08/21/2015\":3.7308,\"08/24/2015\":3.6971,\"08/25/2015\":3.6613,\"08/26/2015\":3.6937,\"08/27/2015\":3.745,\"08/28/2015\":3.7493,\"08/31/2015\":3.778,\"09/01/2015\":3.7503,\"09/02/2015\":3.7626,\"09/03/2015\":3.7645,\"09/04/2015\":3.7952,\"09/07/2015\":3.7928,\"09/08/2015\":3.7878,\"09/09/2015\":3.7634,\"09/10/2015\":3.7648,\"09/11/2015\":3.7264,\"09/14/2015\":3.7124,\"09/15/2015\":3.7238,\"09/16/2015\":3.7315,\"09/17/2015\":3.7129,\"09/18/2015\":3.6738,\"09/21/2015\":3.708,\"09/22/2015\":3.7438,\"09/23/2015\":3.7801,\"09/24/2015\":3.7687,\"09/25/2015\":3.7818,\"09/28/2015\":3.7861,\"09/29/2015\":3.7799,\"09/30/2015\":3.7754,\"10/01/2015\":3.8005,\"10/02/2015\":3.8028,\"10/05/2015\":3.773,\"10/06/2015\":3.789,\"10/07/2015\":3.7604,\"10/08/2015\":3.7543,\"10/09/2015\":3.7242,\"10/12/2015\":3.7148,\"10/13/2015\":3.7199,\"10/14/2015\":3.7129,\"10/15/2015\":3.6948,\"10/16/2015\":3.7243,\"10/19/2015\":3.7265,\"10/20/2015\":3.7385,\"10/21/2015\":3.7627,\"10/22/2015\":3.7806,\"10/23/2015\":3.82,\"10/26/2015\":3.8645,\"10/27/2015\":3.8669,\"10/28/2015\":3.8826,\"10/29/2015\":3.8974,\"10/30/2015\":3.8748,\"11/02/2015\":3.859,\"11/03/2015\":3.8678,\"11/04/2015\":3.8876,\"11/05/2015\":3.8925,\"11/06/2015\":3.9075,\"11/09/2015\":3.9605,\"11/10/2015\":3.957,\"11/12/2015\":3.9434,\"11/13/2015\":3.9388,\"11/16/2015\":3.9581,\"11/17/2015\":3.9775,\"11/18/2015\":3.9802,\"11/19/2015\":3.9754,\"11/20/2015\":3.9706,\"11/23/2015\":3.988,\"11/24/2015\":4.0021,\"11/25/2015\":4.0215,\"11/26/2015\":4.0298,\"11/27/2015\":4.0333,\"11/30/2015\":4.0304,\"12/01/2015\":4.0248,\"12/02/2015\":4.0305,\"12/03/2015\":4.04,\"12/04/2015\":3.9607,\"12/07/2015\":3.9853,\"12/08/2015\":3.9877,\"12/09/2015\":3.9705,\"12/10/2015\":3.9601,\"12/11/2015\":3.9718,\"12/14/2015\":3.9695,\"12/15/2015\":3.9523,\"12/16/2015\":3.9644,\"12/17/2015\":3.9646,\"12/18/2015\":3.9558,\"12/21/2015\":3.92,\"12/22/2015\":3.8787,\"12/23/2015\":3.8872,\"12/24/2015\":3.8695,\"12/28/2015\":3.8663,\"12/29/2015\":3.8659,\"12/30/2015\":3.8801,\"12/31/2015\":3.9011,\"01/04/2016\":3.9281,\"01/05/2016\":4.0073,\"01/07/2016\":4.0085,\"01/08/2016\":3.9963,\"01/11/2016\":4.0085,\"01/12/2016\":4.017,\"01/13/2016\":4.0068,\"01/14/2016\":3.999,\"01/15/2016\":4.0411,\"01/18/2016\":4.1133,\"01/19/2016\":4.0917,\"01/20/2016\":4.0877,\"01/21/2016\":4.1303,\"01/22/2016\":4.1031,\"01/25/2016\":4.1346,\"01/26/2016\":4.1475,\"01/27/2016\":4.1144,\"01/28/2016\":4.0872,\"01/29/2016\":4.0723,\"02/01/2016\":4.0638,\"02/02/2016\":4.0333,\"02/03/2016\":4.0325,\"02/04/2016\":3.9492,\"02/05/2016\":3.942,\"02/08/2016\":3.9525,\"02/09/2016\":3.9771,\"02/10/2016\":3.9383,\"02/11/2016\":3.9219,\"02/12/2016\":3.9074,\"02/15/2016\":3.922,\"02/16/2016\":3.9404,\"02/17/2016\":3.9431,\"02/18/2016\":3.9416,\"02/19/2016\":3.9531,\"02/22/2016\":3.9391,\"02/23/2016\":3.9671,\"02/24/2016\":3.9803,\"02/25/2016\":3.9705,\"02/26/2016\":3.9545,\"02/29/2016\":3.9935,\"03/01/2016\":3.9924,\"03/02/2016\":3.9861,\"03/03/2016\":3.9805,\"03/04/2016\":3.9545,\"03/07/2016\":3.9515,\"03/08/2016\":3.9333,\"03/09/2016\":3.9395,\"03/10/2016\":3.932,\"03/11/2016\":3.8903,\"03/14/2016\":3.847,\"03/15/2016\":3.8649,\"03/16/2016\":3.8749,\"03/17/2016\":3.8037,\"03/18/2016\":3.7882,\"03/21/2016\":3.7838,\"03/22/2016\":3.8005,\"03/23/2016\":3.801,\"03/24/2016\":3.824,\"03/25/2016\":3.8174,\"03/29/2016\":3.8037,\"03/30/2016\":3.7495,\"03/31/2016\":3.759,\"04/01/2016\":3.7193,\"04/04/2016\":3.7254,\"04/05/2016\":3.7337,\"04/06/2016\":3.751,\"04/07/2016\":3.7414,\"04/08/2016\":3.7701,\"04/11/2016\":3.7587,\"04/12/2016\":3.749,\"04/13/2016\":3.7771,\"04/14/2016\":3.8174,\"04/15/2016\":3.8176,\"04/18/2016\":3.801,\"04/19/2016\":3.7925,\"04/20/2016\":3.7842,\"04/21/2016\":3.7981,\"04/22/2016\":3.8399,\"04/25/2016\":3.8962,\"04/26/2016\":3.8935,\"04/27/2016\":3.8793,\"04/28/2016\":3.8695,\"04/29/2016\":3.8738,\"05/02/2016\":3.8195,\"05/04/2016\":3.83,\"05/05/2016\":3.8475,\"05/06/2016\":3.8732,\"05/09/2016\":3.873,\"05/10/2016\":3.8853,\"05/11/2016\":3.8855,\"05/12/2016\":3.8811,\"05/13/2016\":3.8775,\"05/16/2016\":3.8625,\"05/17/2016\":3.8508,\"05/18/2016\":3.9005,\"05/19/2016\":3.9161,\"05/20/2016\":3.9358,\"05/23/2016\":3.9513,\"05/24/2016\":3.9789,\"05/25/2016\":3.9684,\"05/27/2016\":3.9393,\"05/30/2016\":3.947,\"05/31/2016\":3.9369,\"06/01/2016\":3.935,\"06/02/2016\":3.9204,\"06/03/2016\":3.9384,\"06/06/2016\":3.8602,\"06/07/2016\":3.8298,\"06/08/2016\":3.815,\"06/09/2016\":3.8126,\"06/10/2016\":3.8545,\"06/13/2016\":3.8943,\"06/14/2016\":3.9483,\"06/15/2016\":3.9351,\"06/16/2016\":3.9469,\"06/17/2016\":3.9412,\"06/20/2016\":3.8724,\"06/21/2016\":3.8741,\"06/22/2016\":3.8945,\"06/23/2016\":3.8593,\"06/24/2016\":3.9994,\"06/27/2016\":4.0263,\"06/28/2016\":4.003,\"06/29/2016\":3.9905,\"06/30/2016\":3.9803,\"07/01/2016\":3.9548,\"07/04/2016\":3.9886,\"07/05/2016\":3.9963,\"07/06/2016\":4.0225,\"07/07/2016\":4.0036,\"07/08/2016\":4.0001,\"07/11/2016\":4.006,\"07/12/2016\":3.9807,\"07/13/2016\":3.9809,\"07/14/2016\":3.9681,\"07/15/2016\":3.9598,\"07/18/2016\":3.9853,\"07/19/2016\":3.9582,\"07/20/2016\":3.979,\"07/21/2016\":3.9685,\"07/22/2016\":3.9504,\"07/25/2016\":3.9697,\"07/26/2016\":3.9682,\"07/27/2016\":3.9739,\"07/28/2016\":3.9389,\"07/29/2016\":3.9364,\"08/01/2016\":3.904,\"08/02/2016\":3.882,\"08/03/2016\":3.8516,\"08/04/2016\":3.8588,\"08/05/2016\":3.8542,\"08/08/2016\":3.8706,\"08/09/2016\":3.8482,\"08/10/2016\":3.825,\"08/11/2016\":3.8297,\"08/12/2016\":3.8219,\"08/16/2016\":3.7929,\"08/17/2016\":3.8075,\"08/18/2016\":3.7826,\"08/19/2016\":3.7905,\"08/22/2016\":3.809,\"08/23/2016\":3.8061,\"08/24/2016\":3.8174,\"08/25/2016\":3.819,\"08/26/2016\":3.8328,\"08/29/2016\":3.8789,\"08/30/2016\":3.8858,\"08/31/2016\":3.9082,\"09/01/2016\":3.9116,\"09/02/2016\":3.9164,\"09/05/2016\":3.8937,\"09/06/2016\":3.8869,\"09/07/2016\":3.8515,\"09/08/2016\":3.8255,\"09/09/2016\":3.8385,\"09/12/2016\":3.8668,\"09/13/2016\":3.8734,\"09/14/2016\":3.8716,\"09/15/2016\":3.8587,\"09/16/2016\":3.8497,\"09/19/2016\":3.8586,\"09/20/2016\":3.8438,\"09/21/2016\":3.8601,\"09/22/2016\":3.8128,\"09/23/2016\":3.8328,\"09/26/2016\":3.8324,\"09/27/2016\":3.8227,\"09/28/2016\":3.8264,\"09/29/2016\":3.8354,\"09/30/2016\":3.8558,\"10/03/2016\":3.8252,\"10/04/2016\":3.8472,\"10/05/2016\":3.8307,\"10/06/2016\":3.8405,\"10/07/2016\":3.8505,\"10/10/2016\":3.8307,\"10/11/2016\":3.8487,\"10/12/2016\":3.8851,\"10/13/2016\":3.9164,\"10/14/2016\":3.8965,\"10/17/2016\":3.9265,\"10/18/2016\":3.9148,\"10/19/2016\":3.9285,\"10/20/2016\":3.9359,\"10/21/2016\":3.98,\"10/24/2016\":3.969,\"10/25/2016\":3.9543,\"10/26/2016\":3.9517,\"10/27/2016\":3.976,\"10/28/2016\":3.9696,\"10/31/2016\":3.9488,\"11/02/2016\":3.8954,\"11/03/2016\":3.8965,\"11/04/2016\":3.8862,\"11/07/2016\":3.9132,\"11/08/2016\":3.9169,\"11/09/2016\":3.9305,\"11/10/2016\":3.9856,\"11/14/2016\":4.0805,\"11/15/2016\":4.0837,\"11/16/2016\":4.138,\"11/17/2016\":4.1375,\"11/18/2016\":4.1968,\"11/21/2016\":4.1748,\"11/22/2016\":4.1507,\"11/23/2016\":4.1588,\"11/24/2016\":4.188,\"11/25/2016\":4.1628,\"11/28/2016\":4.1521,\"11/29/2016\":4.1827,\"11/30/2016\":4.1721,\"12/01/2016\":4.1987,\"12/02/2016\":4.215,\"12/05/2016\":4.2213,\"12/06/2016\":4.1825,\"12/07/2016\":4.1268,\"12/08/2016\":4.1107,\"12/09/2016\":4.1772,\"12/12/2016\":4.209,\"12/13/2016\":4.1905,\"12/14/2016\":4.1768,\"12/15/2016\":4.2329,\"12/16/2016\":4.2296,\"12/19/2016\":4.2255,\"12/20/2016\":4.2493,\"12/21/2016\":4.2484,\"12/22/2016\":4.2222,\"12/23/2016\":4.2199,\"12/27/2016\":4.212,\"12/28/2016\":4.226,\"12/29/2016\":4.2161,\"12/30/2016\":4.1793}')
-
 	const padNumber = number => number < 10 ? '0' + number : number
 
-	const getCurrencyDateString = date => padNumber((date.getMonth() + 1)) + '/' + padNumber(date.getDate()) + '/' + date.getFullYear()
+	const getCurrencyDateString = date => date.getFullYear() + '-' + padNumber((date.getMonth() + 1)) + '-' + padNumber(date.getDate())
 
 	const getURLDateString = date => date.getFullYear() + '-' + padNumber(date.getDate()) + '-' + padNumber((date.getMonth() + 1))
 
 	const parseDollars = dollars => dollars.replace('$', '').replace(/,/g, '')
+
+	const fetchData = url =>
+		fetch(url, {
+			credentials: 'include',
+			headers: new Headers({
+				'X-XSRF-TOKEN': getXsrfToken()
+			})
+		})
+		.then(response => response.text())
+		.then(text => JSON.parse(filterResponseGarbage(text)))
 
 	const moveOneDayBack = date => {
 		date.setDate(date.getDate() - 1)
 		return date
 	}
 
-	const getRateForTradeDateString = tradeDateString => {
-		let tradeDate = new Date(tradeDateString)
-		let tries = 0
-		let rate
+	const fetchExchangeRate = date =>
+		fetch(`https://api.nbp.pl/api/exchangerates/rates/a/usd/${getCurrencyDateString(date)}/?format=json`)
+			.then(response => {
+				if (response.status === 200) {
+					return response.json()
+						.then(data => data.rates[0].mid)
+				}
+				if (response.status === 404) {
+					return undefined;
+				}
+				return Promise.reject(Error('problem fetching rate from nbp.pl'));
+			})
 
-		while (!rate && tries < 3) {
-			moveOneDayBack(tradeDate)
-			tries++
-			rate = CURRENCY_VALUES[getCurrencyDateString(tradeDate)]
+
+	const getExchangeRate = (date, tries = 3) => {
+		if (tries > 0) {
+			return fetchExchangeRate(moveOneDayBack(date))
+				.then(rate => rate || getExchangeRate(moveOneDayBack(date), tries - 1))
 		}
-
-		return rate
+		return Promise.reject(Error('no rate found!'))
 	}
 
 	const filterResponseGarbage = response => response.substr(response.indexOf('{'))
@@ -55,56 +71,49 @@
 			.split('=')
 			.pop()
 
-	const processReleases = (releases) => {
-		let partials = releases
-			.map(release => {
-				let shareUnits = Number(release.shares)
-				let shareValue = Number(parseDollars(release.salePrice))
-				let totalUSD = shareUnits * shareValue
-				let exchangeRate = getRateForTradeDateString(release.tradeDate)
+	const processReleases = releases =>
+		Promise.all(releases
+			.map(release =>
+				getExchangeRate(new Date(release.tradeDate))
+					.then(exchangeRate => {
+						const shareUnits = Number(release.shares)
+						const shareValue = Number(parseDollars(release.salePrice))
+						const totalUSD = shareUnits * shareValue
 
-				return {
-					tradeDate: release.tradeDate,
-					shareUnits: shareUnits,
-					shareValue: shareValue,
-					totalUSD: totalUSD,
-					exchangeRate: exchangeRate,
-					totalPLN: totalUSD * exchangeRate
-				}
-			})
+						return {
+							tradeDate: release.tradeDate,
+							shareUnits,
+							shareValue,
+							totalUSD,
+							exchangeRate,
+							totalPLN: totalUSD * exchangeRate
+						}
+					})
+			)
+		)
+		.then(partials => {
+			const totalReleaseEarned = partials
+				.reduce((previous, current) => previous + current.totalPLN, 0)
 
-		let totalReleaseEarned = partials
-			.reduce((previous, current) => previous + current.totalPLN, 0)
-
-		if (console.table) {
-			console.log('%crelease details:', 'color: blue')
-			console.table(partials)
-		}
-		console.log(`%creleases total is %c${totalReleaseEarned.toFixed(2)} PLN`, 'color: blue', 'color: red')
-		console.log('%cyou may want to put that into PIT/ZG p. 24 and PIT-36 p. 85 p. 136', 'color: blue')
-	}
+			if (console.table) {
+				console.log('%crelease details:', 'color: blue')
+				console.table(partials)
+			}
+			console.log(`%creleases total is %c${totalReleaseEarned.toFixed(2)} PLN`, 'color: blue', 'color: red')
+			console.log('%cyou may want to put that into PIT/ZG p. 24 and PIT-36 p. 85 p. 136', 'color: blue')
+		})
 
 	const getDividendDetails = dividend => {
 		const orderDate = getURLDateString(new Date(dividend.orderDate))
-		return fetch(`${JSON_BASE}/transaction/details/${COMPANY_ID}/${PLAN_ID}/K?orderDate=${orderDate}&orderNumber=${dividend.orderNumberForUIRef}&segmentId=${dividend.segmentId}&fromOrder=closedOrder&format=json`, {
-			credentials: 'include',
-			headers: new Headers({
-				'X-XSRF-TOKEN': getXsrfToken()
-			})
-		})
-		.then(response => response.text())
-		.then(text => {
-			const data = JSON.parse(filterResponseGarbage(text))
-			return data.orderDetail.dataSet.DATA.pop()
-		})
+		return fetchData(`${JSON_BASE}/transaction/details/${COMPANY_ID}/${PLAN_ID}/K?orderDate=${orderDate}&orderNumber=${dividend.orderNumberForUIRef}&segmentId=${dividend.segmentId}&fromOrder=closedOrder&format=json`)
+			.then(data => data.orderDetail.dataSet.DATA.pop());
 	}
 
-	const processDividends = dividends => {
+	const processDividends = dividends =>
 		Promise.all(dividends
-			.map(dividend => {
-				const exchangeRate = getRateForTradeDateString(dividend.tradeDate)
-				return getDividendDetails(dividend)
-					.then(dividendDetails => {
+			.map(dividend =>
+				Promise.all([getExchangeRate(new Date(dividend.tradeDate)), getDividendDetails(dividend)])
+					.then(([exchangeRate, dividendDetails]) => {
 						const grossDividendCredit = Number(parseDollars(dividendDetails.grossDividendCredi))
 						return {
 							tradeDate: dividend.tradeDate,
@@ -113,135 +122,146 @@
 							totalPLN: grossDividendCredit * exchangeRate
 						}
 					})
-			}))
-			.then(partials => {
-				const totalDividendEarned = partials
-					.reduce((previous, current) => previous + current.totalPLN, 0)
+			)
+		)
+		.then(partials => {
+			const totalDividendEarned = partials
+				.reduce((previous, current) => previous + current.totalPLN, 0)
 
-				if (console.table) {
-					console.log('%cdividend details:', 'color: brown')
-					console.table(partials)
-				}
-				console.log(`%c19% of dividends total is %c${(totalDividendEarned * 0.19).toFixed(2)} PLN`, 'color: brown', 'color: red')
-				console.log('%cyou may want to put that into PIT-38 p. 37. Alternatively PIT-36 p. 218, if you don\'t need PIT-38', 'color: brown')
-			})
-	}
-
-	const processWithholdings = (withholdings) => {
-		let partials = withholdings
-			.map(withholding => {
-				let netCashProceeds = Number(parseDollars(withholding.netCashProceeds))
-				let exchangeRate = getRateForTradeDateString(withholding.tradeDate)
-
-				return {
-					tradeDate: withholding.tradeDate,
-					netCashProceeds: netCashProceeds,
-					exchangeRate: exchangeRate,
-					totalPLN: netCashProceeds * exchangeRate
-				}
-			})
-
-		let totalWithholdings = partials
-			.reduce((previous, current) => previous + current.totalPLN, 0)
-
-		if (console.table) {
-			console.log('%cdividend withholding details:', 'color: darkgreen')
-			console.table(partials)
-		}
-		console.log(`%cdividend witholdings total is %c${totalWithholdings.toFixed(2)} PLN`, 'color: darkgreen', 'color: red')
-		console.log('%cyou may want to put that into PIT-38 p. 38. Alternatively PIT-36 p. 220, if you don\'t need PIT-38', 'color: darkgreen')
-	}
-
-	const processSale = (sale) => {
-		let orderDate = getURLDateString(new Date(sale.orderDate))
-		return fetch(`${JSON_BASE}/transaction/details/${COMPANY_ID}/${PLAN_ID}/K?orderDate=${orderDate}&orderNumber=${sale.orderNumber}&segmentId=${sale.segmentId}&fromOrder=closedOrder&format=json`, {
-				credentials: 'include',
-				headers: new Headers({
-					'X-XSRF-TOKEN': getXsrfToken()
-				})
-			})
-			.then(response => response.text())
-			.then(text => {
-				let data = JSON.parse(filterResponseGarbage(text))
-				let proceedDetails = data.proceedsDetails.dataSet.DATA.pop()
-				let orderDetail = data.orderDetail.dataSet.DATA.pop()
-				let rate = getRateForTradeDateString(orderDetail.trxTradeDate)
-				let sellValue = Number(parseDollars(proceedDetails.grossProceeds)) * rate
-				let transactionCost = Number(parseDollars(proceedDetails.totalFees)) * rate
-				let buyCosts = data.shareLots.dataSet.DATA.reduce((previous, current) => {
-					return previous + Number(current.sharesSold) * Number(parseDollars(current.acquiredPrice)) * getRateForTradeDateString(current.acquiredDate)
-				}, 0)
-
-				return {
-					tradeDate: orderDetail.trxTradeDate,
-					sellValue: sellValue,
-					exchangeRate: rate,
-					transactionCost: transactionCost,
-					buyCosts: buyCosts,
-					totalCost: buyCosts + transactionCost,
-					profit: sellValue - buyCosts - transactionCost,
-					buyTransactions: data.shareLots.dataSet.DATA
-				}
-			})
-	}
-
-	fetch(`${JSON_BASE}/transactions/${COMPANY_ID}/K/${PLAN_ID}/duration/between/${PERIOD_START}/${PERIOD_END}?format=json`, {
-			credentials: 'include',
-			headers: new Headers({
-				'X-XSRF-TOKEN': getXsrfToken()
-			})
-		})
-		.then(response => response.text())
-		.then(text => {
-			let data = JSON.parse(filterResponseGarbage(text))
-			let records = data.closedOrders.dataSet.DATA
-			let sales = records.filter((record) => record.transactionType === 'Sale')
-
-			processReleases(records.filter((record) => record.transactionType === 'Release'))
-			processDividends(records.filter((record) => record.transactionType === 'Dividend Credit'))
-			processWithholdings(records.filter((record) => record.transactionType === 'IRS Withholding'))
-
-			if (!sales.length) {
-				console.log('%cno sales found ~ FIN ~', 'color: green')
-			} else {
-				console.log(`%cprocessing ${sales.length} sale records...`, 'color: green')
-				Promise.all(sales.map(processSale))
-					.then(sales => {
-						if (console.table) {
-							console.log('%csale details:', 'color: darkorange')
-							console.table(sales, ['tradeDate','sellValue','exchangeRate','transactionCost','buyCosts','totalCost','profit'])
-							console.log('%csale details breakdowns:', 'color: darkorange')
-							sales.forEach((sale, index) => {
-								console.log(`%csale ${index + 1} related buy transactions`, 'color: darkorange')
-								console.table(sale.buyTransactions.map((transaction) => {
-									let acquiredPrice = Number(parseDollars(transaction.acquiredPrice))
-									let sharesSold = Number(transaction.sharesSold)
-									let exchangeRate = getRateForTradeDateString(transaction.acquiredDate)
-
-									return {
-										tradeDate: transaction.acquiredDate,
-										sharesSold: sharesSold,
-										acquiredPrice: acquiredPrice,
-										exchangeRate: exchangeRate,
-										acquiredPLN: sharesSold * acquiredPrice * exchangeRate
-									}
-								}))
-							})
-						}
-						let totalSellValue = sales.reduce((previous, current) => previous + current.sellValue, 0)
-						let totalCost = sales.reduce((previous, current) => previous + current.totalCost, 0)
-						let totalProfit = sales.reduce((previous, current) => previous + current.profit, 0)
-
-						console.log('%csells grand totals:', 'color: darkorange')
-						console.log(`%csells total value is %c${totalSellValue.toFixed(2)} PLN`, 'color: darkorange', 'color: red')
-						console.log('%cyou may want to put that into PIT-38 p. 22', 'color: darkorange')
-						console.log(`%csells total cost is %c${totalCost.toFixed(2)} PLN`, 'color: darkorange', 'color: red')
-						console.log('%cyou may want to put that into PIT-38 p. 23', 'color: darkorange')
-						console.log(`%csells total profit is %c${totalProfit.toFixed(2)} PLN`, 'color: darkorange', 'color: red')
-						console.log('%cyou may want to put that into PIT/ZG p. 31', 'color: darkorange')
-						console.log('%call done ~ FIN ~', 'color: green')
-					})
+			if (console.table) {
+				console.log('%cdividend details:', 'color: brown')
+				console.table(partials)
 			}
+			console.log(`%c19% of dividends total is %c${(totalDividendEarned * 0.19).toFixed(2)} PLN`, 'color: brown', 'color: red')
+			console.log('%cyou may want to put that into PIT-38 p. 37. Alternatively PIT-36 p. 218, if you don\'t need PIT-38', 'color: brown')
+		})
+
+	const processWithholdings = withholdings =>
+		Promise.all(withholdings
+			.map(withholding =>
+				getExchangeRate(new Date(withholding.tradeDate))
+					.then(exchangeRate => {
+						const netCashProceeds = Number(parseDollars(withholding.netCashProceeds))
+						return {
+							tradeDate: withholding.tradeDate,
+							netCashProceeds,
+							exchangeRate,
+							totalPLN: netCashProceeds * exchangeRate
+						}
+					})
+
+			)
+		)
+		.then(partials => {
+			const totalWithholdings = partials
+				.reduce((previous, current) => previous + current.totalPLN, 0)
+
+			if (console.table) {
+				console.log('%cdividend withholding details:', 'color: darkgreen')
+				console.table(partials)
+			}
+			console.log(`%cdividend witholdings total is %c${totalWithholdings.toFixed(2)} PLN`, 'color: darkgreen', 'color: red')
+			console.log('%cyou may want to put that into PIT-38 p. 38. Alternatively PIT-36 p. 220, if you don\'t need PIT-38', 'color: darkgreen')
+		})
+
+	const getSaleRelatedBuyCosts = shareLots =>
+		Promise.all(shareLots
+			.map(shareLot => getExchangeRate(new Date(shareLot.acquiredDate))
+				.then(exchangeRate => Number(shareLot.sharesSold) * Number(parseDollars(shareLot.acquiredPrice)) * exchangeRate))
+		)
+		.then(shareLotCosts => shareLotCosts.reduce((previous, current) => previous + current, 0))
+
+	const getSaleDetails = sale => {
+		const orderDate = getURLDateString(new Date(sale.orderDate))
+		return fetchData(`${JSON_BASE}/transaction/details/${COMPANY_ID}/${PLAN_ID}/K?orderDate=${orderDate}&orderNumber=${sale.orderNumber}&segmentId=${sale.segmentId}&fromOrder=closedOrder&format=json`)
+			.then(data => {
+				const proceedDetails = data.proceedsDetails.dataSet.DATA.pop()
+				const orderDetail = data.orderDetail.dataSet.DATA.pop()
+				const buyTransactions = data.shareLots.dataSet.DATA
+				return Promise.all([getExchangeRate(new Date(orderDetail.trxTradeDate)), getSaleRelatedBuyCosts(buyTransactions)])
+					.then(([exchangeRate, buyCosts]) => {
+						const sellValue = Number(parseDollars(proceedDetails.grossProceeds)) * exchangeRate
+						const transactionCost = Number(parseDollars(proceedDetails.totalFees)) * exchangeRate
+						return {
+							tradeDate: orderDetail.trxTradeDate,
+							sellValue,
+							exchangeRate,
+							transactionCost,
+							buyCosts,
+							totalCost: buyCosts + transactionCost,
+							profit: sellValue - buyCosts - transactionCost,
+							buyTransactions
+						}
+					})
+			})
+	}
+
+	const getSaleBuyTransactions = sale =>
+		Promise.all(sale.buyTransactions
+			.map(transaction =>
+				getExchangeRate(new Date(transaction.acquiredDate))
+					.then(exchangeRate => {
+						const acquiredPrice = Number(parseDollars(transaction.acquiredPrice))
+						const sharesSold = Number(transaction.sharesSold)
+						return {
+							tradeDate: transaction.acquiredDate,
+							sharesSold,
+							acquiredPrice,
+							exchangeRate,
+							acquiredPLN: sharesSold * acquiredPrice * exchangeRate
+						}
+					})
+				))
+
+	const processSales = sales => {
+		if (!sales.length) {
+			console.log('%cno sale records found', 'color: green')
+			return Promise.resolve()
+		}
+		return Promise.all(sales.map(getSaleDetails))
+			.then(sales => {
+				if (console.table) {
+					console.log('%csale details:', 'color: darkorange')
+					console.table(sales, ['tradeDate','sellValue','exchangeRate','transactionCost','buyCosts','totalCost','profit'])
+					console.log('%csale details breakdowns:', 'color: darkorange')
+					return Promise.all(sales.map((sale, index) =>
+						getSaleBuyTransactions(sale)
+							.then(buyTransactions => {
+								console.log(`%csale ${index + 1} related buy transactions`, 'color: darkorange')
+								console.table(buyTransactions)
+							}))
+						)
+						.then(() => sales)
+				}
+				return sales;
+			})
+			.then(sales => {
+				const totalSellValue = sales.reduce((previous, current) => previous + current.sellValue, 0)
+				const totalCost = sales.reduce((previous, current) => previous + current.totalCost, 0)
+				const totalProfit = sales.reduce((previous, current) => previous + current.profit, 0)
+
+				console.log('%csells grand totals:', 'color: darkorange')
+				console.log(`%csells total value is %c${totalSellValue.toFixed(2)} PLN`, 'color: darkorange', 'color: red')
+				console.log('%cyou may want to put that into PIT-38 p. 22', 'color: darkorange')
+				console.log(`%csells total cost is %c${totalCost.toFixed(2)} PLN`, 'color: darkorange', 'color: red')
+				console.log('%cyou may want to put that into PIT-38 p. 23', 'color: darkorange')
+				console.log(`%csells total profit is %c${totalProfit.toFixed(2)} PLN`, 'color: darkorange', 'color: red')
+				console.log('%cyou may want to put that into PIT/ZG p. 31', 'color: darkorange')
+			})
+	}
+
+	fetchData(`${JSON_BASE}/transactions/${COMPANY_ID}/K/${PLAN_ID}/duration/between/${PERIOD_START}/${PERIOD_END}?format=json`)
+		.then(data => {
+			const records = data.closedOrders.dataSet.DATA
+			return Promise.all([
+				processReleases(records.filter((record) => record.transactionType === 'Release')),
+				processDividends(records.filter((record) => record.transactionType === 'Dividend Credit')),
+				processWithholdings(records.filter((record) => record.transactionType === 'IRS Withholding')),
+				processSales(records.filter((record) => record.transactionType === 'Sale'))
+			])
+		})
+		.then(() => {
+			console.log('%call done ~ FIN ~', 'color: green')
 		})
 		.catch(error => console.log('ups!, ' + error))
 })()
