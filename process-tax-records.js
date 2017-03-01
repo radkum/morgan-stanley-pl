@@ -250,6 +250,9 @@
 			})
 	}
 
+	console.info('%cfetching data...', 'font-weight: bold;')
+	console.warn('%cplease ignore the \"%cGET https://api.nbp.pl/api/exchangerates/rates/a/usd/YYYY-MM-DD/?format=json 404 (Not Found - Brak danych)\" errors logged on the console by the browser - %cTHEY ARE EXPECTED', 'font-weight: bold;', 'font-style: italic', 'color:green;font-weight: bold;')
+
 	fetchData(`${JSON_BASE}/transactions/${COMPANY_ID}/K/${PLAN_ID}/duration/between/${PERIOD_START}/${PERIOD_END}?format=json`)
 		.then(data => {
 			const records = data.closedOrders.dataSet.DATA
