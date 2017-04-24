@@ -56,7 +56,7 @@
 	const getExchangeRate = (date, tries = 3) => {
 		if (tries > 0) {
 			return fetchExchangeRate(moveOneDayBack(date))
-				.then(rate => rate || getExchangeRate(moveOneDayBack(date), tries - 1))
+				.then(rate => rate || getExchangeRate(date, tries - 1))
 		}
 		return Promise.reject(Error('no rate found!'))
 	}
