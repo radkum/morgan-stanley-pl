@@ -256,12 +256,16 @@
 	fetchData(`${JSON_BASE}/transactions/${COMPANY_ID}/K/${PLAN_ID}/duration/between/${PERIOD_START}/${PERIOD_END}?format=json`)
 		.then(data => {
 			const records = data.closedOrders.dataSet.DATA
-			return Promise.all([
-				processReleases(records.filter((record) => record.transactionType === 'Release')),
-				processDividends(records.filter((record) => record.transactionType === 'Dividend Credit')),
-				processWithholdings(records.filter((record) => record.transactionType === 'IRS Withholding')),
-				processSales(records.filter((record) => record.transactionType === 'Sale'))
-			])
+			if (records && records.length) {
+				return Promise.all([
+					processReleases(records.filter((record) => record.transactionType === 'Release')),
+					processDividends(records.filter((record) => record.transactionType === 'Dividend Credit')),
+					processWithholdings(records.filter((record) => record.transactionType === 'IRS Withholding')),
+					processSales(records.filter((record) => record.transactionType === 'Sale'))
+				])
+			} else {
+				console.warn(`seems like there is no activity in your account for the period from ${PERIOD_START} to ${PERIOD_END}`)
+			}
 		})
 		.then(() => {
 			console.log('%call done ~ FIN ~', 'color: green')
