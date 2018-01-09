@@ -6,9 +6,9 @@
 
 	'use strict'
 
-	const PERIOD_START = '2016-01-01'
+	const PERIOD_START = '2017-01-01'
 
-	const PERIOD_END = '2016-31-12'
+	const PERIOD_END = '2017-31-12'
 
 	const COMPANY_ID = '93N'
 
@@ -20,7 +20,9 @@
 
 	const getCurrencyDateString = date => date.getFullYear() + '-' + padNumber((date.getMonth() + 1)) + '-' + padNumber(date.getDate())
 
-	const getURLDateString = date => date.getFullYear() + '-' + padNumber(date.getDate()) + '-' + padNumber((date.getMonth() + 1))
+	const getURLDateStringYDM = date => date.getFullYear() + '-' + padNumber(date.getDate()) + '-' + padNumber((date.getMonth() + 1))
+
+	const getURLDateStringYMD = date => date.getFullYear() + '-' + padNumber((date.getMonth() + 1)) + '-' + padNumber(date.getDate())
 
 	const parseDollars = dollars => dollars.replace('$', '').replace(/,/g, '')
 
@@ -74,21 +76,25 @@
 	const processReleases = releases =>
 		Promise.all(releases
 			.map(release =>
-				getExchangeRate(new Date(release.tradeDate))
-					.then(exchangeRate => {
-						const shareUnits = Number(release.shares)
-						const shareValue = Number(parseDollars(release.salePrice))
-						const totalUSD = shareUnits * shareValue
+				Promise.all([
+					getExchangeRate(new Date(release.tradeDate)),
+					getReleaseDetails(release)
+				])
+				.then(([exchangeRate, {fmvPerShare}]) => {
+					const shareUnits = Number(release.shares)
+					const shareValue = Number(parseDollars(fmvPerShare))
+					const totalUSD = shareUnits * shareValue
 
-						return {
-							tradeDate: release.tradeDate,
-							shareUnits,
-							shareValue,
-							totalUSD,
-							exchangeRate,
-							totalPLN: totalUSD * exchangeRate
-						}
-					})
+					return {
+						tradeDate: release.tradeDate,
+						shareUnits,
+						shareValue,
+						totalUSD,
+						exchangeRate,
+						totalPLN: totalUSD * exchangeRate
+					}
+
+				})
 			)
 		)
 		.then(partials => {
@@ -104,9 +110,14 @@
 		})
 
 	const getDividendDetails = dividend => {
-		const orderDate = getURLDateString(new Date(dividend.orderDate))
+		const orderDate = getURLDateStringYDM(new Date(dividend.orderDate))
 		return fetchData(`${JSON_BASE}/transaction/details/${COMPANY_ID}/${PLAN_ID}/K?orderDate=${orderDate}&orderNumber=${dividend.orderNumberForUIRef}&segmentId=${dividend.segmentId}&fromOrder=closedOrder&format=json`)
-			.then(data => data.orderDetail.dataSet.DATA.pop());
+			.then(data => data.orderDetail.dataSet.DATA.pop())
+	}
+
+	const getReleaseDetails = release => {
+		const releaseDate = getURLDateStringYMD(new Date(release.tradeDate))
+		return fetchData(`${JSON_BASE}/detail/companyId/${release.uniqueCompanyId}/rs/awardID/${release.awardId}/releaseDate/${releaseDate}/corpPlan/${release.corpPlan}/releasedQty/0?format=json`)
 	}
 
 	const processDividends = dividends =>
@@ -172,7 +183,7 @@
 		.then(shareLotCosts => shareLotCosts.reduce((previous, current) => previous + current, 0))
 
 	const getSaleDetails = sale => {
-		const orderDate = getURLDateString(new Date(sale.orderDate))
+		const orderDate = getURLDateStringYDM(new Date(sale.orderDate))
 		return fetchData(`${JSON_BASE}/transaction/details/${COMPANY_ID}/${PLAN_ID}/K?orderDate=${orderDate}&orderNumber=${sale.orderNumber}&segmentId=${sale.segmentId}&fromOrder=closedOrder&format=json`)
 			.then(data => {
 				const proceedDetails = data.proceedsDetails.dataSet.DATA.pop()
