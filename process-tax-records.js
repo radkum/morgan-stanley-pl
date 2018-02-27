@@ -80,9 +80,9 @@
 					getExchangeRate(new Date(release.tradeDate)),
 					getReleaseDetails(release)
 				])
-				.then(([exchangeRate, {fmvPerShare}]) => {
+				.then(([exchangeRate, {acquiredPrice}]) => {
 					const shareUnits = Number(release.shares)
-					const shareValue = Number(parseDollars(fmvPerShare))
+					const shareValue = Number(parseDollars(acquiredPrice))
 					const totalUSD = shareUnits * shareValue
 
 					return {
@@ -116,8 +116,9 @@
 	}
 
 	const getReleaseDetails = release => {
-		const releaseDate = getURLDateStringYMD(new Date(release.tradeDate))
-		return fetchData(`${JSON_BASE}/detail/companyId/${release.uniqueCompanyId}/rs/awardID/${release.awardId}/releaseDate/${releaseDate}/corpPlan/${release.corpPlan}/releasedQty/0?format=json`)
+		const orderDate = getURLDateStringYMD(new Date(release.orderDate))
+		return fetchData(`${JSON_BASE}/transaction/details/${COMPANY_ID}/${PLAN_ID}/K?orderDate=${orderDate}&orderNumber=${release.orderNumberForUIRef}&segmentId=${release.segmentId}&fromOrder=closedOrder&format=json`)
+		     .then(data => data.shareDetails.dataSet.DATA.pop())
 	}
 
 	const processDividends = dividends =>
@@ -269,7 +270,7 @@
 			const records = data.closedOrders.dataSet.DATA
 			if (records && records.length) {
 				return Promise.all([
-					processReleases(records.filter((record) => record.transactionType === 'Release')),
+					processReleases(records.filter((record) => record.transactionType === 'Released Shares')),
 					processDividends(records.filter((record) => record.transactionType === 'Dividend Credit')),
 					processWithholdings(records.filter((record) => record.transactionType === 'IRS Withholding')),
 					processSales(records.filter((record) => record.transactionType === 'Sale'))
