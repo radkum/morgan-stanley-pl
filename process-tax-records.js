@@ -55,7 +55,7 @@
 			})
 
 
-	const getExchangeRate = (date, tries = 4) => {
+	const getExchangeRate = (date, tries = 7) => {
 		if (tries > 0) {
 			return fetchExchangeRate(moveOneDayBack(date))
 				.then(rate => rate || getExchangeRate(date, tries - 1))
