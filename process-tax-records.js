@@ -77,6 +77,8 @@
                 })
             })
 
+    console.info('fetching data...')
+
     fetchHistoryRecords()
         .then(records => records.filter(record => record.txApiType.includes('WITHDRAWAL') && (new Date(record.settlementDate)).getFullYear() === theYear))
         .then(sales => Promise.all(sales.map(sale => {
@@ -95,12 +97,13 @@
                 sales.forEach(sale => {
                     const totalTaxAmountPLN = sale.taxableDetails.reduce((acc, curr) => acc + curr.taxAmountPLN , 0)
                     grandTaxTotalPLN += totalTaxAmountPLN
-                    console.log(`You sold ${sale.quantity} shares on ${sale.transactionDate} (settled on ${sale.settlementDate}). Total tax amount is ${totalTaxAmountPLN.toFixed(2)} PLN. Details:`)
+                    console.info(`You sold ${sale.quantity} shares on ${sale.transactionDate} (settled on ${sale.settlementDate}). Total tax amount is ${totalTaxAmountPLN.toFixed(2)} PLN. Details:`)
                     console.table(sale.taxableDetails)
                 })
-                console.log(`all of that tax sums up to ${grandTaxTotalPLN.toFixed(2)} PLN`)
+                console.info(`all of that tax sums up to ${grandTaxTotalPLN.toFixed(2)} PLN`)
+                console.warn('if you are in the 3th tax band (32%) AND you are planning to submit a PIT correction to get some shares tax money back, then this script is NOT for you.')
             } else {
-                console.log(`seems like there is nothing to declare (no sales in ${theYear}), but please double check just in case`)
+                console.info(`seems like there is nothing to declare (no sales for ${theYear}), but please double check just in case`)
             }
         })
 })()
