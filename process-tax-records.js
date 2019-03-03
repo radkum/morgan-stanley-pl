@@ -10,6 +10,22 @@
         return date
     }
 
+    const download = text => {
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8;' }));
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'export.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    stringifyList = list =>
+        ([Object.keys(list[0]).join(','), ...list.map(item => Object.values(item).join(','))]).join('\r\n')
+
+    const stringifyData = data =>
+        data.map(item => Array.isArray(item) ? stringifyList(item) : item).join('\r\n\r\n')
+
     const getCurrencyDateString = date =>
         date.getFullYear() + '-' + padNumber((date.getMonth() + 1)) + '-' + padNumber(date.getDate())
 
@@ -26,7 +42,7 @@
                 return Promise.reject(Error('problem fetching rate from nbp.pl'));
             })
 
-    const getExchangeRate = (date, tries = 3) => {
+    const getExchangeRate = (date, tries = 5) => {
         if (tries > 0) {
             return fetchExchangeRate(moveOneDayBack(date))
                 .then(rate => rate || getExchangeRate(date, tries - 1))
@@ -55,26 +71,57 @@
         fetchData(session.api.baseUri + session.api.baseLegacyUriSuffix + '/participants/' + session.participant.activeAccount.employeePK + '/txHistory')
             .then(data => data.txs)
 
+    const processSaleDetail = (detail, sellExchangeRate) =>
+        getExchangeRate(new Date(detail.purchaseDate))
+            .then(buyExchangeRate => {
+                let buyValueUSD = 0;
+                let buyValuePLN = 0;
+                const quantity = Number(detail.quantity)
+                const buyDate = new Date(detail.purchaseDate)
+                const buyValuePerShare = Number(detail.bookValuePerShare.amount)
+                if (buyDate.getFullYear() < 2018) {
+                    buyValueUSD = buyValuePerShare * quantity;
+                    buyValuePLN = buyValueUSD * buyExchangeRate;
+                }
+                const sellValuePerShare = Number(detail.marketValuePerShare.amount)
+                const sellValueUSD = sellValuePerShare * quantity
+                const sellValuePLN = sellValueUSD * sellExchangeRate
+                return {
+                    buyDate: detail.purchaseDate,
+                    quantity,
+                    buyValuePerShare,
+                    buyValueUSD,
+                    buyExchangeRate,
+                    buyValuePLN,
+                    sellValuePerShare,
+                    sellValueUSD,
+                    sellExchangeRate,
+                    sellValuePLN
+                }
+            })
+
     const processSaleDetails = sale =>
-        fetchExchangeRate(new Date(sale.settlementDate))
-            .then(exchangeRate => {
+        getExchangeRate(new Date(sale.settlementDate))
+            .then(sellExchangeRate => {
                 const longTermCostTransactions = (sale.costBasis.longTerm && sale.costBasis.longTerm.rows) || []
                 const shortTermCostTransactions = (sale.costBasis.shortTerm && sale.costBasis.shortTerm.rows) || []
-                return longTermCostTransactions.concat(shortTermCostTransactions).map(transaction => {
-                    let taxableAmountUSD;
-                    const purchaseDate = new Date(transaction.purchaseDate)
-                    const marketValuePerShare = Number(transaction.marketValuePerShare.amount)
-                    const bookValuePerShare = Number(transaction.bookValuePerShare.amount)
-                    const quantity = Number(transaction.quantity)
-                    if (purchaseDate.getFullYear() < 2018) {
-                        taxableAmountUSD = Math.max((marketValuePerShare - bookValuePerShare) * quantity, 0)
-                    } else {
-                        taxableAmountUSD = marketValuePerShare * quantity
-                    }
-                    const taxableAmountPLN = taxableAmountUSD * exchangeRate
-                    const taxAmountPLN = taxableAmountPLN * 0.19
-                    return {purchaseDate, bookValuePerShare, marketValuePerShare, quantity, taxableAmountUSD, exchangeRate, taxableAmountPLN, taxAmountPLN}
-                })
+                return Promise.all(longTermCostTransactions.concat(shortTermCostTransactions).map(detail => processSaleDetail(detail, sellExchangeRate)))
+                    .then(details => {
+                        const transactionFeeUSD = Number(sale.summary.summarySold.fees.amount)
+                        const transactionFeePLN = transactionFeeUSD * sellExchangeRate
+                        return {
+                            transactionDate: sale.withdrawalDate,
+                            settlementDate: sale.settlementDate,
+                            quantity: details.reduce((acc, curr) => acc + curr.quantity , 0),
+                            transactionFeeUSD,
+                            transactionFeePLN,
+                            transactionDetails: details,
+                            sellExchangeRate,
+                            sellValueUSD: details.reduce((acc, curr) => acc + curr.sellValueUSD , 0),
+                            sellValuePLN: details.reduce((acc, curr) => acc + curr.sellValuePLN , 0),
+                            buyValuePLN: details.reduce((acc, curr) => acc + curr.buyValuePLN , 0)
+                        }
+                    })
             })
 
     console.info('fetching data...')
@@ -84,24 +131,46 @@
         .then(sales => Promise.all(sales.map(sale => {
             const promise = sale.txApiType === 'WITHDRAWAL_REALTIME_TRANSACTION' ? fetchRtSaleDetails(sale.realtimeTransactionPK) : fetchSaleDetails(sale.spfWithdrawalPK)
             return promise.then(processSaleDetails)
-                .then(taxableDetails => ({
-                    transactionDate: sale.transactionDate,
-                    settlementDate: sale.settlementDate,
-                    quantity: sale.quantity,
-                    taxableDetails
-                }))
         })))
         .then(sales => {
             if (sales.length) {
-                let grandTaxTotalPLN = 0;
+                const data = [];
+                data.push('sales summary:')
+                data.push(sales.map(sale => ({
+                    'date': sale.transactionDate,
+                    'settlement date': sale.settlementDate,
+                    'quantity': sale.quantity.toFixed(2),
+                    'exchange rate': sale.sellExchangeRate.toFixed(2),
+                    'earnings usd': sale.sellValueUSD.toFixed(2),
+                    'earnings pln': sale.sellValuePLN.toFixed(2),
+                    'cost pln': sale.buyValuePLN.toFixed(2),
+                    'fees usd': sale.transactionFeeUSD.toFixed(2),
+                    'fees pln': sale.transactionFeePLN.toFixed(2),
+                    'cost + fees pln': (sale.buyValuePLN + sale.transactionFeePLN).toFixed(2)
+                })))
+
+                const totalEarnings = sales.reduce((acc, curr) => acc + curr.sellValuePLN , 0)
+                const totalCosts = sales.reduce((acc, curr) => acc + curr.buyValuePLN + curr.transactionFeePLN, 0)
+                data.push('total earnings pln (PIT-38 p. 21): ' + totalEarnings.toFixed(2))
+                data.push('total earnings cost (with fees) pln (PIT-38 p. 22): ' + totalCosts.toFixed(2))
+                data.push('total profit pln (PIT/ZG p. 31): ' + (totalEarnings - totalCosts).toFixed(2))
+
                 sales.forEach(sale => {
-                    const totalTaxAmountPLN = sale.taxableDetails.reduce((acc, curr) => acc + curr.taxAmountPLN , 0)
-                    grandTaxTotalPLN += totalTaxAmountPLN
-                    console.info(`You sold ${sale.quantity} shares on ${sale.transactionDate} (settled on ${sale.settlementDate}). Total tax amount is ${totalTaxAmountPLN.toFixed(2)} PLN. Details:`)
-                    console.table(sale.taxableDetails)
+                    data.push(`breakdown of sale from ${sale.transactionDate}:`)
+                    data.push(sale.transactionDetails.map(detail => ({
+                        'buy date': detail.buyDate,
+                        'quantity': detail.quantity.toFixed(2),
+                        'buy value per share': detail.buyValuePerShare.toFixed(2),
+                        'buy value usd': detail.buyValueUSD.toFixed(2),
+                        'buy exchange rate': detail.buyExchangeRate.toFixed(2),
+                        'buy value pln': detail.buyValuePLN.toFixed(2),
+                        'sell value per share': detail.sellValuePerShare.toFixed(2),
+                        'sell value usd': detail.sellValueUSD.toFixed(2),
+                        'sell exchange rate': detail.sellExchangeRate.toFixed(2),
+                        'sell value pln': detail.sellValuePLN.toFixed(2)
+                    })))
                 })
-                console.info(`all of that tax sums up to ${grandTaxTotalPLN.toFixed(2)} PLN`)
-                console.warn('if you are in the 3th tax band (32%) AND you are planning to submit a PIT correction to get some shares tax money back, then this script is NOT for you.')
+                download(stringifyData(data))
             } else {
                 console.info(`seems like there is nothing to declare (no sales for ${theYear}), but please double check just in case`)
             }
