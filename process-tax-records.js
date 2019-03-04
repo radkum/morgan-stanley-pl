@@ -101,7 +101,7 @@
             })
 
     const processSaleDetails = sale =>
-        getExchangeRate(new Date(sale.settlementDate))
+        getExchangeRate(new Date(sale.withdrawalDate))
             .then(sellExchangeRate => {
                 const longTermCostTransactions = (sale.costBasis.longTerm && sale.costBasis.longTerm.rows) || []
                 const shortTermCostTransactions = (sale.costBasis.shortTerm && sale.costBasis.shortTerm.rows) || []
