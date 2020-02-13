@@ -153,7 +153,7 @@
                 const totalCosts = sales.reduce((acc, curr) => acc + curr.buyValuePLN + curr.transactionFeePLN, 0)
                 data.push('total earnings pln (PIT-38 p. 21): ' + totalEarnings.toFixed(2))
                 data.push('total earnings cost (with fees) pln (PIT-38 p. 22): ' + totalCosts.toFixed(2))
-                data.push('total profit pln (PIT/ZG p. 31): ' + (totalEarnings - totalCosts).toFixed(2))
+                data.push('total profit pln (PIT/ZG p. 32): ' + (totalEarnings - totalCosts).toFixed(2))
 
                 sales.forEach(sale => {
                     data.push(`breakdown of sale from ${sale.transactionDate}:`)
