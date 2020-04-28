@@ -1,6 +1,6 @@
 (() => {
 
-    const theYear = 2018
+    const theYear = 2019
 
     const padNumber = number =>
         number < 10 ? '0' + number : number
@@ -151,8 +151,8 @@
 
                 const totalEarnings = sales.reduce((acc, curr) => acc + curr.sellValuePLN , 0)
                 const totalCosts = sales.reduce((acc, curr) => acc + curr.buyValuePLN + curr.transactionFeePLN, 0)
-                data.push('total earnings pln (PIT-38 p. 21): ' + totalEarnings.toFixed(2))
-                data.push('total earnings cost (with fees) pln (PIT-38 p. 22): ' + totalCosts.toFixed(2))
+                data.push('total earnings pln (PIT-38 p. 22): ' + totalEarnings.toFixed(2))
+                data.push('total earnings cost (with fees) pln (PIT-38 p. 23): ' + totalCosts.toFixed(2))
                 data.push('total profit pln (PIT/ZG p. 32): ' + (totalEarnings - totalCosts).toFixed(2))
 
                 sales.forEach(sale => {
