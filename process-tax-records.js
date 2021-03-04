@@ -1,6 +1,10 @@
 (() => {
 
-    const theYear = 2020
+    let theYear
+
+    while (!theYear || Number.isNaN(theYear)) {
+        theYear = Number.parseInt(prompt('Please enter the tax year'), 10)
+    }
 
     const padNumber = number =>
         number < 10 ? '0' + number : number
