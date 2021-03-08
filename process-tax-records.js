@@ -182,8 +182,9 @@
                 }
             })
 
-    const processSaleDetails = sale =>
-        getExchangeRate(new Date(sale.withdrawalDate))
+    const processSaleDetails = sale => {
+        const saleDateString = sale.order.uniqueFillDate || sale.withdrawalDate
+        return getExchangeRate(new Date(saleDateString))
             .then(sellExchangeRate => {
                 const longTermCostTransactions = (sale.costBasis.longTerm && sale.costBasis.longTerm.rows) || []
                 const shortTermCostTransactions = (sale.costBasis.shortTerm && sale.costBasis.shortTerm.rows) || []
@@ -192,7 +193,7 @@
                         const transactionFeeUSD = Number(sale.summary.summarySold.fees.amount)
                         const transactionFeePLN = transactionFeeUSD * sellExchangeRate
                         return {
-                            transactionDate: sale.withdrawalDate,
+                            transactionDate: saleDateString,
                             settlementDate: sale.settlementDate,
                             quantity: details.reduce((acc, curr) => acc + curr.quantity , 0),
                             transactionFeeUSD,
@@ -205,12 +206,16 @@
                         }
                     })
             })
+    }
 
     console.info('fetching data...')
 
+    const isStockSaleRecord = record =>
+        record.txApiType.includes('WITHDRAWAL') && record.fundType === 'STOCK'
+
     const getSaleRecords = () =>
         fetchHistoryRecords()
-            .then(records => records.filter(record => record.txApiType.includes('WITHDRAWAL') && (new Date(record.settlementDate)).getFullYear() === theYear))
+            .then(records => records.filter(record => isStockSaleRecord(record) && (new Date(record.settlementDate)).getFullYear() === theYear))
             .then(sales => Promise.all(sales.map(sale => {
                 const promise = sale.txApiType === 'WITHDRAWAL_REALTIME_TRANSACTION' ? fetchRtSaleDetails(sale.realtimeTransactionPK) : fetchSaleDetails(sale.spfWithdrawalPK)
                 return promise.then(processSaleDetails)
