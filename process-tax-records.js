@@ -273,7 +273,9 @@
             const totalDividendEarning = dividends.reduce((total, dividend) => total + dividend.amountPLN, 0)
             data.push('total dividend earnings pln: ' + totalDividendEarning.toFixed(2))
             const pitInfo = sales.length ? 'PIT-38 p. ???' : 'PIT-36 p. ???'
-            data.push(`total dividend tax pln (${pitInfo}): ${(totalDividendEarning * 0.04).toFixed(2)}`)
+            data.push(`total dividend 19% tax pln (PIT-38 p. 45): ${(totalDividendEarning * 0.19).toFixed(2)}`)
+            data.push(`total dividend 15% (*) tax withhold (PIT-38 p. 46) *: ${(totalDividendEarning * 0.15).toFixed(2)}`)
+            data.push('(*) Assuming you filled in W-8BEN. Otherwise adjust this number')
         } else {
             console.info(`seems like you got no dividends in ${theYear}, but please double check just in case`)
         }
