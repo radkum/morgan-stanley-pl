@@ -132,8 +132,11 @@
 
     console.info('fetching data...')
 
+    const isStockSaleRecord = record =>
+        record.txApiType.includes('WITHDRAWAL') && record.fundType === 'STOCK'
+
     fetchHistoryRecords()
-        .then(records => records.filter(record => record.txApiType.includes('WITHDRAWAL') && (new Date(record.settlementDate)).getFullYear() === theYear))
+        .then(records => records.filter(record => isStockSaleRecord(record) && (new Date(record.settlementDate)).getFullYear() === theYear))
         .then(sales => Promise.all(sales.map(sale => {
             const promise = sale.txApiType === 'WITHDRAWAL_REALTIME_TRANSACTION' ? fetchRtSaleDetails(sale.realtimeTransactionPK) : fetchSaleDetails(sale.spfWithdrawalPK)
             return promise.then(processSaleDetails)
