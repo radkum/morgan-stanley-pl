@@ -6,6 +6,12 @@
         theYear = Number.parseInt(prompt('Please enter the tax year'), 10)
     }
 
+    const session = JSON.parse(sessionStorage.getItem('session_state'))
+
+    const dollarsAmountRegex = /\$([0-9\.]+?)$/
+
+    const extractDollarsAmount = text => text.match(dollarsAmountRegex)[1]
+
     const padNumber = number =>
         number < 10 ? '0' + number : number
 
@@ -30,11 +36,84 @@
     const stringifyData = data =>
         data.map(item => Array.isArray(item) ? stringifyList(item) : item).join('\r\n\r\n')
 
-    const getCurrencyDateString = date =>
+    const getDateString = date =>
         date.getFullYear() + '-' + padNumber((date.getMonth() + 1)) + '-' + padNumber(date.getDate())
 
+    const getEmployeeId = () => {
+        return session.participant.activeAccount.employeePK
+    }
+
+    const getAccessToken = () => {
+        return session.api.accessToken
+    }
+
+    const fetchPreviousSixMonthsDividends = dateString =>
+        fetch(`https://stockplan.morganstanley.com/graphql`, {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                'authorization': getAccessToken(),
+                'employeeId': getEmployeeId()
+            },
+            body: JSON.stringify({
+                query: `
+                    query ($currentDate: String, $consolidation: Boolean) {
+                        events {
+                            pastEvents(options: {date: $currentDate, consolidation: $consolidation}) {
+                                date
+                                description
+                                type
+                            }
+                        }
+                    }
+                `,
+                variables: {
+                    consolidation: true,
+                    currentDate: dateString
+                }
+            })
+        })
+        .then(response => response.json())
+        .then(json => {
+            return json.data.events.pastEvents.filter(event => {
+                return event.type === 'CASH_DIVIDEND' && event.date.includes(String(theYear))
+            })
+            .map(event => ({
+                date: event.date,
+                amountUSD: Number(extractDollarsAmount(event.description))
+            }))
+        })
+
+    const deduplicateDividendRecords = dividendRecords => {
+        return Object.values(dividendRecords.reduce((dividendsMap, dividendRecord) => {
+            dividendsMap[dividendRecord.date] = dividendRecord
+            return dividendsMap
+        }, {}))
+    }
+
+    const getDividendRecords = () => {
+        return Promise.all([
+            fetchPreviousSixMonthsDividends(`${theYear + 1}-01-01`),
+            fetchPreviousSixMonthsDividends(`${theYear}-09-01`),
+            fetchPreviousSixMonthsDividends(`${theYear}-05-01`)
+        ])
+        .then(dividendRecordLists => {
+            const dividendRecords = deduplicateDividendRecords(dividendRecordLists.flat())
+            return Promise.all(dividendRecords.map(dividendRecord => {
+                const dividendDate = new Date(dividendRecord.date)
+                return getExchangeRate(dividendDate)
+                    .then(dividendExchangeRate => ({
+                        date: dividendRecord.date,
+                        exchangeRate: dividendExchangeRate,
+                        amountUSD: dividendRecord.amountUSD,
+                        amountPLN: dividendRecord.amountUSD * dividendExchangeRate
+                    }))
+            }))
+        })
+    }
+
     const fetchExchangeRate = date =>
-        fetch(`https://api.nbp.pl/api/exchangerates/rates/a/usd/${getCurrencyDateString(date)}/?format=json`)
+        fetch(`https://api.nbp.pl/api/exchangerates/rates/a/usd/${getDateString(date)}/?format=json`)
             .then(response => {
                 if (response.status === 200) {
                     return response.json()
@@ -54,8 +133,6 @@
         return Promise.reject(Error('no rate found!'))
     }
 
-    const session = JSON.parse(sessionStorage.getItem('session_state'))
-
     const fetchData = url =>
         fetch(url, {
             credentials: 'include',
@@ -72,7 +149,7 @@
         fetchData(session.api.baseUri + session.api.baseLegacyUriSuffix + '/withdrawals/realtimeTransactions/' + transactionId)
 
     const fetchHistoryRecords = () =>
-        fetchData(session.api.baseUri + session.api.baseLegacyUriSuffix + '/participants/' + session.participant.activeAccount.employeePK + '/txHistory')
+        fetchData(session.api.baseUri + session.api.baseLegacyUriSuffix + '/participants/' + getEmployeeId() + '/txHistory')
             .then(data => data.txs)
 
     const processSaleDetail = (detail, sellExchangeRate) =>
@@ -83,7 +160,7 @@
                 const quantity = Number(detail.quantity)
                 const buyDate = new Date(detail.purchaseDate)
                 const buyValuePerShare = Number(detail.bookValuePerShare.amount)
-                if (buyDate.getFullYear() < 2018) {
+                if (buyDate.getFullYear() < 2018 || detail.coveredStatus === 'COVERED') {
                     buyValueUSD = buyValuePerShare * quantity;
                     buyValuePLN = buyValueUSD * buyExchangeRate;
                 }
@@ -100,7 +177,8 @@
                     sellValuePerShare,
                     sellValueUSD,
                     sellExchangeRate,
-                    sellValuePLN
+                    sellValuePLN,
+                    coveredStatus: detail.coveredStatus
                 }
             })
 
@@ -135,53 +213,79 @@
     const isStockSaleRecord = record =>
         record.txApiType.includes('WITHDRAWAL') && record.fundType === 'STOCK'
 
-    fetchHistoryRecords()
-        .then(records => records.filter(record => isStockSaleRecord(record) && (new Date(record.settlementDate)).getFullYear() === theYear))
-        .then(sales => Promise.all(sales.map(sale => {
-            const promise = sale.txApiType === 'WITHDRAWAL_REALTIME_TRANSACTION' ? fetchRtSaleDetails(sale.realtimeTransactionPK) : fetchSaleDetails(sale.spfWithdrawalPK)
-            return promise.then(processSaleDetails)
-        })))
-        .then(sales => {
-            if (sales.length) {
-                const data = [];
-                data.push('sales summary:')
-                data.push(sales.map(sale => ({
-                    'date': sale.transactionDate,
-                    'settlement date': sale.settlementDate,
-                    'quantity': sale.quantity.toFixed(2),
-                    'exchange rate': sale.sellExchangeRate.toFixed(2),
-                    'earnings usd': sale.sellValueUSD.toFixed(2),
-                    'earnings pln': sale.sellValuePLN.toFixed(2),
-                    'cost pln': sale.buyValuePLN.toFixed(2),
-                    'fees usd': sale.transactionFeeUSD.toFixed(2),
-                    'fees pln': sale.transactionFeePLN.toFixed(2),
-                    'cost + fees pln': (sale.buyValuePLN + sale.transactionFeePLN).toFixed(2)
+    const getSaleRecords = () =>
+        fetchHistoryRecords()
+            .then(records => records.filter(record => isStockSaleRecord(record) && (new Date(record.settlementDate)).getFullYear() === theYear))
+            .then(sales => Promise.all(sales.map(sale => {
+                const promise = sale.txApiType === 'WITHDRAWAL_REALTIME_TRANSACTION' ? fetchRtSaleDetails(sale.realtimeTransactionPK) : fetchSaleDetails(sale.spfWithdrawalPK)
+                return promise.then(processSaleDetails)
+            })))
+
+    Promise.all([
+        getSaleRecords(),
+        getDividendRecords()
+    ])
+    .then(([sales, dividends]) => {
+        const data = [];
+        if (sales.length) {
+            data.push('sales summary:')
+            data.push(sales.map(sale => ({
+                'date': sale.transactionDate,
+                'settlement date': sale.settlementDate,
+                'quantity': sale.quantity.toFixed(2),
+                'exchange rate': sale.sellExchangeRate.toFixed(2),
+                'earnings usd': sale.sellValueUSD.toFixed(2),
+                'earnings pln': sale.sellValuePLN.toFixed(2),
+                'cost pln': sale.buyValuePLN.toFixed(2),
+                'fees usd': sale.transactionFeeUSD.toFixed(2),
+                'fees pln': sale.transactionFeePLN.toFixed(2),
+                'cost + fees pln': (sale.buyValuePLN + sale.transactionFeePLN).toFixed(2)
+            })))
+
+            const totalEarnings = sales.reduce((acc, curr) => acc + curr.sellValuePLN , 0)
+            const totalCosts = sales.reduce((acc, curr) => acc + curr.buyValuePLN + curr.transactionFeePLN, 0)
+            data.push('total earnings pln (PIT-38 p. 22): ' + totalEarnings.toFixed(2))
+            data.push('total earnings cost (with fees) pln (PIT-38 p. 23): ' + totalCosts.toFixed(2))
+            data.push('total profit pln (PIT/ZG p. 32): ' + (totalEarnings - totalCosts).toFixed(2))
+
+            sales.forEach(sale => {
+                data.push(`breakdown of sale from ${sale.transactionDate}:`)
+                data.push(sale.transactionDetails.map(detail => ({
+                    'buy date': detail.buyDate,
+                    'quantity': detail.quantity.toFixed(2),
+                    'buy value per share': detail.buyValuePerShare.toFixed(2),
+                    'buy value usd': detail.buyValueUSD.toFixed(2),
+                    'buy exchange rate': detail.buyExchangeRate.toFixed(2),
+                    'buy value pln': detail.buyValuePLN.toFixed(2),
+                    'sell value per share': detail.sellValuePerShare.toFixed(2),
+                    'sell value usd': detail.sellValueUSD.toFixed(2),
+                    'sell exchange rate': detail.sellExchangeRate.toFixed(2),
+                    'sell value pln': detail.sellValuePLN.toFixed(2),
+                    'covered status': detail.coveredStatus
                 })))
-
-                const totalEarnings = sales.reduce((acc, curr) => acc + curr.sellValuePLN , 0)
-                const totalCosts = sales.reduce((acc, curr) => acc + curr.buyValuePLN + curr.transactionFeePLN, 0)
-                data.push('total earnings pln (PIT-38 p. 22): ' + totalEarnings.toFixed(2))
-                data.push('total earnings cost (with fees) pln (PIT-38 p. 23): ' + totalCosts.toFixed(2))
-                data.push('total profit pln (PIT/ZG p. 32): ' + (totalEarnings - totalCosts).toFixed(2))
-
-                sales.forEach(sale => {
-                    data.push(`breakdown of sale from ${sale.transactionDate}:`)
-                    data.push(sale.transactionDetails.map(detail => ({
-                        'buy date': detail.buyDate,
-                        'quantity': detail.quantity.toFixed(2),
-                        'buy value per share': detail.buyValuePerShare.toFixed(2),
-                        'buy value usd': detail.buyValueUSD.toFixed(2),
-                        'buy exchange rate': detail.buyExchangeRate.toFixed(2),
-                        'buy value pln': detail.buyValuePLN.toFixed(2),
-                        'sell value per share': detail.sellValuePerShare.toFixed(2),
-                        'sell value usd': detail.sellValueUSD.toFixed(2),
-                        'sell exchange rate': detail.sellExchangeRate.toFixed(2),
-                        'sell value pln': detail.sellValuePLN.toFixed(2)
-                    })))
-                })
-                download(stringifyData(data))
-            } else {
-                console.info(`seems like there is nothing to declare (no sales for ${theYear}), but please double check just in case`)
-            }
-        })
+            })
+        } else {
+            console.info(`seems like you have no sales for ${theYear}, but please double check just in case`)
+        }
+        if (dividends.length) {
+            data.push('dividends summary:')
+            data.push(dividends.map(dividend => ({
+                'date': dividend.date,
+                'exchange rate': dividend.exchangeRate.toFixed(2),
+                'amount usd': dividend.amountUSD.toFixed(2),
+                'amount pln': dividend.amountPLN.toFixed(2)
+            })))
+            const totalDividendEarning = dividends.reduce((total, dividend) => total + dividend.amountPLN, 0)
+            data.push('total dividend earnings pln: ' + totalDividendEarning.toFixed(2))
+            const pitHints = sales.length ?
+                ['PIT-38 p. 45', 'PIT-38 p. 46'] :
+                ['PIT-36 p. 387', 'PIT-36 p. 389']
+            data.push(`total dividend 19% tax pln (${pitHints[0]}): ${(totalDividendEarning * 0.19).toFixed(2)}`)
+            data.push(`total dividend 15% (*) tax withhold (${pitHints[1]}): ${(totalDividendEarning * 0.15).toFixed(2)}`)
+            data.push('(*) Assuming you filled in W-8BEN. Otherwise adjust this number')
+        } else {
+            console.info(`seems like you got no dividends in ${theYear}, but please double check just in case`)
+        }
+        download(stringifyData(data))
+    })
 })()
