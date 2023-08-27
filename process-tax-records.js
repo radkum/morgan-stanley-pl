@@ -48,7 +48,7 @@
     }
 
     const fetchPreviousSixMonthsDividends = dateString =>
-        fetch(`https://stockplan.morganstanley.com/graphql`, {
+        fetch(`${session.api.baseUri}/graphql`, {
             method: 'post',
             headers: {
                 'Content-Type': 'application/json',
