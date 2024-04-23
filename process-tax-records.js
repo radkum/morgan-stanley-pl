@@ -30,8 +30,14 @@
         document.body.removeChild(link);
     }
 
-    stringifyList = list =>
-        ([Object.keys(list[0]).join(','), ...list.map(item => Object.values(item).join(','))]).join('\r\n')
+    stringifyList = list => {
+        if (list[0] == null) {
+            console.log("list[0] is either undefined or null");
+            return "";
+        }
+
+        return ([Object.keys(list[0]).join(','), ...list.map(item => Object.values(item).join(','))]).join('\r\n');
+    }
 
     const stringifyData = data =>
         data.map(item => Array.isArray(item) ? stringifyList(item) : item).join('\r\n\r\n')
@@ -125,7 +131,7 @@
                 return Promise.reject(Error('problem fetching rate from nbp.pl'));
             })
 
-    const getExchangeRate = (date, tries = 5) => {
+    const getExchangeRate = (date, tries = 10) => {
         if (tries > 0) {
             return fetchExchangeRate(moveOneDayBack(date))
                 .then(rate => rate || getExchangeRate(date, tries - 1))
@@ -186,8 +192,8 @@
         const saleDateString = sale.order.uniqueFillDate || sale.withdrawalDate
         return getExchangeRate(new Date(saleDateString))
             .then(sellExchangeRate => {
-                const longTermCostTransactions = (sale.costBasis.longTerm && sale.costBasis.longTerm.rows) || []
-                const shortTermCostTransactions = (sale.costBasis.shortTerm && sale.costBasis.shortTerm.rows) || []
+                const longTermCostTransactions = (sale.costBasis && sale.costBasis.longTerm && sale.costBasis.longTerm.rows) || []
+                const shortTermCostTransactions = (sale.costBasis && sale.costBasis.shortTerm && sale.costBasis.shortTerm.rows) || []
                 return Promise.all(longTermCostTransactions.concat(shortTermCostTransactions).map(detail => processSaleDetail(detail, sellExchangeRate)))
                     .then(details => {
                         const transactionFeeUSD = Number(sale.summary.summarySold.fees.amount)
